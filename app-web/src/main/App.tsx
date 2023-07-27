@@ -1,11 +1,11 @@
 import { registerRootComponent } from 'expo';
-
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 
 export default function App() {
   return (
     <View style={styles.container}>
+      <h1>Clocker balls</h1>
       <Text>Valytic</Text>
       <StatusBar style="auto" />
     </View>
