@@ -29,7 +29,7 @@
 
 ## Prerequisites
 * npm
-* expo
+* docker
 
 ## Setup
 ### Frontend
@@ -46,15 +46,11 @@ npm install
 npm run web
 ```
 ### Backend
-1. Move into the services directory
-```sh
-cd services
-```
 1. Copy the env.example file and adjust values appropriately
 ```sh
 cp env.example .env
 ```
 2. Start the containers
 ```sh
-docker compose up
+docker compose --profile backend up
 ```

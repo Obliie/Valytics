@@ -1,0 +1,14 @@
+[flake8]
+ignore = ANN101
+exclude = 
+    .git,
+    __pycache__,
+    *_pb2.py,
+    *_pb2_grpc.py
+
+import-order-style = google
+
+max-complexity = 10
+max-line-length = 120
+
+docstring-convention = google
