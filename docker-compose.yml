@@ -1,39 +1,43 @@
 version: "3.8"
 name: valytics
 services:
+  ###
+  # Service Containers
+  ###
   riot-ingest:
     build:
       context: ./
       dockerfile: ./services/riot-ingest/Dockerfile
-    volumes:
-      - ./services/riot-ingest:/service
-      - ./protobufs:/protobufs
     env_file:
       - .env
-    ports:
-      - ${RIOT_INGEST_SERVICE_PORT}:${RIOT_INGEST_SERVICE_PORT}
-    command: watchmedo auto-restart --recursive --pattern="*.py" --directory="/service/" python3 /service/src/main/service.py
+    volumes:
+      - ./services/riot-ingest/src/main:/service
+      - ./protobufs:/protobufs
+    command: watchmedo auto-restart --recursive --pattern="*.py" --directory="/service/" python3 /service/service.py
     profiles:
       - backend
+    ports:
+      - ${RIOT_INGEST_SERVICE_PORT}:${RIOT_INGEST_SERVICE_PORT}
     networks:
-      valyticsmesh:
-        ipv4_address: 172.199.0.3
+      - valyticsmesh
 
-  riot-ingest-test:
+  ###
+  # Test Containers
+  ###
+  integration:
     build:
       context: ./
-      dockerfile: ./services/riot-ingest/Dockerfile
-    volumes:
-      - ./services/riot-ingest:/service
-      - ./protobufs:/protobufs
+      dockerfile: ./builder/integration-test/Dockerfile
     env_file:
       - .env
-    command: python3 /service/src/test/service_test_client.py
+    volumes:
+      - ./services/riot-ingest/src/test:/tests/riot-ingest
+      - ./protobufs:/protobufs
+    command: pytest /tests
     profiles:
       - test
     networks:
-      valyticsmesh:
-        ipv4_address: 172.199.0.4
+      - valyticsmesh
 
   python-lint:
     build:
@@ -41,8 +45,6 @@ services:
       dockerfile: ./builder/python-lint/Dockerfile
     volumes:
     - ./services:/services
-    profiles:
-      - pre-commit
     command: 
       - /bin/bash
       - -c
@@ -51,12 +53,10 @@ services:
         black --line-length 120 /services
         flake8 --version
         flake8 /services
-    networks:
-      - valyticsdev
+    profiles: [ "pre-commit", "pylint" ]
+    network_mode: none
 
 networks:
-  valyticsdev:
-    driver: bridge
   valyticsmesh:
     driver: bridge
     ipam:
