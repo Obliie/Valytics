@@ -7,14 +7,14 @@
   <h3 align="center">Valytics</h3>
 
   <p align="center">
-    A VALORANT match analysis app built with React Native, using Python microservices as the backend.
+    A VALORANT match analysis app built with React Native, using Python microservices in the backend.
     <br />
     <br />
     <a href="https://twitter.com/Obliie">Contact me</a>
     ·
-    <a href="https://github.com/Obliie/Valytics/issues">Report Bug</a>
+    <a href="https://github.com/Obliie/Valytics/issues">Issues</a>
     ·
-    <a href="https://github.com/Obliie/Valytics/issues">Request Feature</a>
+    <a href="https://github.com/Obliie/Valytics/pulls">Pull Requests</a>
   </p>
 </p>
 
@@ -23,7 +23,9 @@
 * [Development](#development)
   * [Prerequisites](#prerequisites)
   * [Setup](#setup)
-
+    * [Frontend](#frontend)
+    * [Backend](#backend)
+  * [Testing](#testing)
 
 # Development
 
@@ -50,7 +52,18 @@ npm run web
 ```sh
 cp env.example .env
 ```
-2. Start the containers
+2. Start the backend microservice containers
 ```sh
 docker compose --profile backend up
+```
+
+## Testing
+Run service integration tests:
+```sh
+docker compose --profile test up
+```
+
+Run pre-commit checks:
+```sh
+docker compose --profile pre-commit up
 ```
