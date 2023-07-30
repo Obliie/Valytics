@@ -10,9 +10,30 @@ services:
       - ./protobufs:/protobufs
     env_file:
       - .env
+    ports:
+      - ${RIOT_INGEST_SERVICE_PORT}:${RIOT_INGEST_SERVICE_PORT}
     command: watchmedo auto-restart --recursive --pattern="*.py" --directory="/service/" python3 /service/src/main/service.py
     profiles:
       - backend
+    networks:
+      valyticsmesh:
+        ipv4_address: 172.199.0.3
+
+  riot-ingest-test:
+    build:
+      context: ./
+      dockerfile: ./services/riot-ingest/Dockerfile
+    volumes:
+      - ./services/riot-ingest:/service
+      - ./protobufs:/protobufs
+    env_file:
+      - .env
+    command: python3 /service/src/test/service_test_client.py
+    profiles:
+      - test
+    networks:
+      valyticsmesh:
+        ipv4_address: 172.199.0.4
 
   python-lint:
     build:
@@ -30,3 +51,12 @@ services:
         black --line-length 120 /services
         flake8 --version
         flake8 /services
+
+networks:
+  valyticsmesh:
+    driver: bridge
+    ipam:
+      config:
+      - subnet: 172.199.0.0/16
+      driver: default
+    name: valyticsmesh
