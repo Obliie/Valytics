@@ -7,6 +7,8 @@ service RiotIngest {
     rpc GetMatchData(MatchDataRequest) returns (MatchDataResponse) {}
 }
 
+
+//VAL-MATCH-V1 (/val/match/v1/matches/{matchId})
 message MatchDataRequest {
     string matchId = 1;
 }
@@ -15,3 +17,32 @@ message MatchDataResponse {
     string matchId = 1;
     string response = 2;
 }
+
+//VAL-MATCH-V1 (/val/match/v1/matchlists/by-puuid/{puuid})
+message MatchListDataRequest {
+    string puuId = 1;
+}
+
+message MatchListDataResponse {
+    string puuId = 1;
+    string response = 2;
+}
+
+
+
+//VAL-CONTENT-V1 (/val/content/v1/contents)
+// How does a user make an api request here? Is there an ID?
+
+
+
+
+//VAL-RANKED-V1 (/val/ranked/v1/leaderboards/by-act/{actId})
+message MatchListDataRequest {
+    string actId = 1;
+}
+
+message MatchListDataResponse {
+    string actId = 1;
+    string response = 2;
+}
+
