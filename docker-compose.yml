@@ -17,7 +17,7 @@ services:
     profiles:
       - backend
     ports:
-      - ${RIOT_INGEST_SERVICE_PORT}:${RIOT_INGEST_SERVICE_PORT}
+      - 127.0.0.1:${RIOT_INGEST_SERVICE_PORT}:${RIOT_INGEST_SERVICE_PORT}
     networks:
       - valyticsmesh
 
@@ -59,8 +59,4 @@ services:
 networks:
   valyticsmesh:
     driver: bridge
-    ipam:
-      config:
-      - subnet: 172.199.0.0/16
-      driver: default
     name: valyticsmesh
