@@ -5,8 +5,9 @@ package services;
 // Riot Ingest service
 service RiotIngest {
     rpc GetMatchData(MatchDataRequest) returns (MatchDataResponse) {}
+    rpc GetMatchListData(MatchListDataRequest) returns (MatchListDataResponse) {}
+    rpc GetLeaderboardData(LeaderboardsDataRequest) returns (LeaderboardsDataResponse) {}
 }
-
 
 //VAL-MATCH-V1 (/val/match/v1/matches/{matchId})
 message MatchDataRequest {
@@ -37,11 +38,11 @@ message MatchListDataResponse {
 
 
 //VAL-RANKED-V1 (/val/ranked/v1/leaderboards/by-act/{actId})
-message MatchListDataRequest {
+message LeaderboardsDataRequest {
     string actId = 1;
 }
 
-message MatchListDataResponse {
+message LeaderboardsDataResponse {
     string actId = 1;
     string response = 2;
 }
