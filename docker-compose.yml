@@ -51,8 +51,12 @@ services:
         black --line-length 120 /services
         flake8 --version
         flake8 /services
+    networks:
+      - valyticsdev
 
 networks:
+  valyticsdev:
+    driver: bridge
   valyticsmesh:
     driver: bridge
     ipam:
