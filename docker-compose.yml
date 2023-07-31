@@ -27,7 +27,7 @@ services:
   integration:
     build:
       context: ./
-      dockerfile: ./builder/integration-test/Dockerfile
+      dockerfile: ./containers/integration-test/Dockerfile
     env_file:
       - .env
     volumes:
@@ -42,7 +42,7 @@ services:
   python-lint:
     build:
       context: ./
-      dockerfile: ./builder/python-lint/Dockerfile
+      dockerfile: ./containers/python-lint/Dockerfile
     volumes:
     - ./services:/services
     command: 
