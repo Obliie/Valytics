@@ -11,8 +11,15 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestServicer):
     def GetMatchData(
         self, request: riot_ingest_pb2.MatchDataRequest, context: int
     ) -> riot_ingest_pb2.MatchDataResponse:
-        return riot_ingest_pb2.MatchDataResponse(matchId="id", response="data")
-
+        match_id = request.matchId  
+        status_code = 100     
+        if status_code == 200:
+            return riot_ingest_pb2.MatchDataResponse(matchId=match_id, response=self.loadMatchData())
+        else:
+            error_message = riot_ingest_pb2.ErrorMessageResponse(code=status_code, message="API call failed.")
+            context.set_code(grpc.StatusCode.INTERNAL)  # Set an appropriate gRPC status code for the error
+            context.set_details("API call to Riot API failed.")
+            return error_message
 
 def serve() -> None:
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
