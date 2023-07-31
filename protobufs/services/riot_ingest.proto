@@ -5,11 +5,15 @@ package services;
 // Riot Ingest service
 service RiotIngest {
     rpc GetMatchData(MatchDataRequest) returns (MatchDataResponse) {}
+    rpc GetAccountData(AccountDataRequest) returns (AccountDataResponse) {}
     rpc GetMatchListData(MatchListDataRequest) returns (MatchListDataResponse) {}
+    rpc GetContentData(ContentDataRequest) returns (ContentDataResponse) {}
     rpc GetLeaderboardData(LeaderboardDataRequest) returns (LeaderboardDataResponse) {}
+
 }
 
 //VAL-MATCH-V1 (/val/match/v1/matches/{matchId})
+//Match Data
 message MatchDataRequest {
     string matchId = 1;
 }
@@ -19,7 +23,21 @@ message MatchDataResponse {
     string response = 2;
 }
 
+//ACCOUNT-V1 (/riot/account/v1/accounts/by-riot-id/{gameName}/{tagLine})
+//Account Data
+
+message AccountDataRequest {
+    string tagLine = 1;
+}
+
+message AccountDataResponse {
+    string puuid = 1;
+    string gameName = 2;
+    string tagLine = 3;
+}
+
 //VAL-MATCH-V1 (/val/match/v1/matchlists/by-puuid/{puuid})
+//Player Matches Data
 message MatchListDataRequest {
     string puuId = 1;
 }
@@ -29,15 +47,17 @@ message MatchListDataResponse {
     string response = 2;
 }
 
-
-
 //VAL-CONTENT-V1 (/val/content/v1/contents)
-// How does a user make an api request here? Is there an ID?
+//Content Data
+message ContentDataRequest {
+}
 
-
-
+message ContentDataResponse {
+    string response = 1;
+}
 
 //VAL-RANKED-V1 (/val/ranked/v1/leaderboards/by-act/{actId})
+//Leaderboard data
 message LeaderboardDataRequest {
     string actId = 1;
 }
@@ -46,4 +66,3 @@ message LeaderboardDataResponse {
     string actId = 1;
     string response = 2;
 }
-
