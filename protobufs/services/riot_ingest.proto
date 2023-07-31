@@ -9,7 +9,7 @@ service RiotIngest {
     rpc GetMatchListData(MatchListDataRequest) returns (MatchListDataResponse) {}
     rpc GetContentData(ContentDataRequest) returns (ContentDataResponse) {}
     rpc GetLeaderboardData(LeaderboardDataRequest) returns (LeaderboardDataResponse) {}
-
+    rpc GetErrorMessage(ErrorMessageRequest) returns (ErrorMessageResponse) {}
 }
 
 //VAL-MATCH-V1 (/val/match/v1/matches/{matchId})
@@ -65,4 +65,13 @@ message LeaderboardDataRequest {
 message LeaderboardDataResponse {
     string actId = 1;
     string response = 2;
+}
+
+message ErrorMessageRequest {
+  int32 code = 1;
+}
+
+message ErrorMessageResponse {
+  int32 code = 1;
+  string message = 2;
 }
