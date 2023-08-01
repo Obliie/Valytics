@@ -16,8 +16,6 @@ services:
     command: watchmedo auto-restart --recursive --pattern="*.py" --directory="/service/" python3 /service/service.py
     profiles:
       - backend
-    ports:
-      - 127.0.0.1:${RIOT_INGEST_SERVICE_PORT}:${RIOT_INGEST_SERVICE_PORT}
     networks:
       - valyticsmesh
 
@@ -55,6 +53,51 @@ services:
         flake8 /services
     profiles: [ "pre-commit", "pylint" ]
     network_mode: none
+
+  ###
+  # Envoy and API stats
+  ###
+  api-gateway:
+    build:
+      context: ./
+      dockerfile: ./containers/api-gateway/Dockerfile
+      args:
+        RIOT_INGEST_SERVICE_PORT: ${RIOT_INGEST_SERVICE_PORT}
+    env_file:
+      - .env
+    depends_on:
+      - riot-ingest
+      - statsd-exporter
+    command: /usr/local/bin/envoy -c /etc/envoy/envoy.json -l trace --log-path /tmp/envoy-info.log
+    profiles:
+      - backend
+    ports:
+      - ${HOST}:${ENVOY_EDGE_GATEWAY_PORT}:8080
+      - ${HOST}:${ENVOY_EDGE_GATEWAY_ADMIN_PORT}:9090
+    networks:
+      - valyticsmesh
+
+  statsd-exporter:
+    image: prom/statsd-exporter:latest
+    profiles:
+      - backend
+    networks:
+      - valyticsmesh
+
+  prometheus:
+    build:
+      context: ./
+      dockerfile: ./containers/prometheus/Dockerfile
+    depends_on:
+      - statsd-exporter
+    command: "--config.file=/etc/prometheus/prometheus.yaml"
+    profiles:
+      - backend
+    ports:
+      - ${HOST}:${PROMETHEUS_PORT}:9090
+    networks:
+      - valyticsmesh
+
 
 networks:
   valyticsmesh:

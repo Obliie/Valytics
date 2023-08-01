@@ -26,6 +26,7 @@
     * [Frontend](#frontend)
     * [Backend](#backend)
   * [Testing](#testing)
+* [Exposed Service Ports](#exposed-service-ports)
 
 # Development
 
@@ -67,3 +68,11 @@ Run pre-commit checks:
 ```sh
 docker compose --profile pre-commit up
 ```
+
+# Exposed Service Ports
+Ports for exposed services. This does not include internal services.
+| Service                   | Default Port |
+| ------------------------- | ------------ |
+| Envoy API Gateway         | 8080         |
+| Envoy API Gateway Admin   | 21999        |
+| Prometheus                | 9090         |
