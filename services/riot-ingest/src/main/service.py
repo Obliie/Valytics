@@ -9,7 +9,7 @@ from service_common.service_logging import init_logging, log_and_flush
 
 class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestServicer):
     def GetMatchData(
-        self, request: riot_ingest_pb2.MatchDataRequest, context: int
+        self, request: riot_ingest_pb2.MatchDataRequest, context: grpc.ServicerContext
     ) -> riot_ingest_pb2.MatchDataResponse:
         match_id = request.matchId  
         status_code = 100     

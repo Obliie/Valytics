@@ -1,19 +1,31 @@
 syntax = "proto3";
-
 package services;
 
-// Riot Ingest service
+/*
+ * Riot Ingest service 
+ * This service provides various RPC methods to retrieve data related to Riot Games.
+*/
 service RiotIngest {
+    // Used to retrieve data related to a specific match (game).
     rpc GetMatchData(MatchDataRequest) returns (MatchDataResponse) {}
-    rpc GetAccountData(AccountDataRequest) returns (AccountDataResponse) {}
-    rpc GetMatchListData(MatchListDataRequest) returns (MatchListDataResponse) {}
+
+    // Used to get puuid data based on a game name and tagline.
+    rpc GetAccountByRiotID(AccountDataRequest) returns (AccountDataResponse) {}
+
+    // Used to obtain a list of matches related to a specific player.
+    rpc GetPlayerMatches(MatchListDataRequest) returns (MatchListDataResponse) {}
+
+    // Used to fetch content-related data, which might include assets, updates, or other information.
     rpc GetContentData(ContentDataRequest) returns (ContentDataResponse) {}
+
+    // Used to get data related to leaderboards, possibly for competitive rankings.
     rpc GetLeaderboardData(LeaderboardDataRequest) returns (LeaderboardDataResponse) {}
-    rpc GetErrorMessage(ErrorMessageRequest) returns (ErrorMessageResponse) {}
 }
 
-//VAL-MATCH-V1 (/val/match/v1/matches/{matchId})
-//Match Data
+/*
+ * VAL-MATCH-V1 (/val/match/v1/matches/{matchId})
+ * Uses matchId to retrieve match data e.g. puuid's, kill's, deaths, assists etc.
+*/
 message MatchDataRequest {
     string matchId = 1;
 }
@@ -23,32 +35,39 @@ message MatchDataResponse {
     string response = 2;
 }
 
-//ACCOUNT-V1 (/riot/account/v1/accounts/by-riot-id/{gameName}/{tagLine})
-//Account Data
-
+/*
+ * ACCOUNT-V1 (/riot/account/v1/accounts/by-riot-id/{gameName}/{tagLine})
+ * Used to get puuid based on a game name and tagline.
+*/
 message AccountDataRequest {
-    string tagLine = 1;
+    string gameName = 1;
+    string tagLine = 2;
 }
 
 message AccountDataResponse {
-    string puuid = 1;
-    string gameName = 2;
-    string tagLine = 3;
+    string gameName = 1;
+    string tagLine = 2;
+    string puuId = 2;
 }
 
-//VAL-MATCH-V1 (/val/match/v1/matchlists/by-puuid/{puuid})
-//Player Matches Data
+/*
+ * VAL-MATCH-V1 (/val/match/v1/matchlists/by-puuid/{puuid})
+ * Uses puuid to obtain a list which contains other lists that specify a matchid, queueid, and gameStartTimeMillis.
+ */
 message MatchListDataRequest {
-    string puuId = 1;
+    string puuid = 1;
 }
 
 message MatchListDataResponse {
-    string puuId = 1;
+    string puuid = 1;
     string response = 2;
 }
 
-//VAL-CONTENT-V1 (/val/content/v1/contents)
-//Content Data
+/*
+ * VAL-CONTENT-V1 (/val/content/v1/contents)
+ * Used to fetch content-related data, which might include assets, updates, or other information.
+*/
+
 message ContentDataRequest {
 }
 
@@ -56,22 +75,21 @@ message ContentDataResponse {
     string response = 1;
 }
 
-//VAL-RANKED-V1 (/val/ranked/v1/leaderboards/by-act/{actId})
-//Leaderboard data
+/*
+ * VAL-RANKED-V1 (/val/ranked/v1/leaderboards/by-act/{actId})
+ * Used to get data related to leaderboards, possibly for competitive rankings.
+*/
+enum ActId {
+  ACT_ID_UNSPECIFIED = 0;
+  ACT_ID_1 = 1;
+  // Add more Act IDs as needed...
+}
+
 message LeaderboardDataRequest {
-    string actId = 1;
+    ActId actId = 1;
 }
 
 message LeaderboardDataResponse {
-    string actId = 1;
+    ActId actId = 1;
     string response = 2;
-}
-
-message ErrorMessageRequest {
-  int32 code = 1;
-}
-
-message ErrorMessageResponse {
-  int32 code = 1;
-  string message = 2;
 }
