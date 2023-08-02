@@ -1,5 +1,6 @@
 syntax = "proto3";
 package services;
+package google.rpc;
 
 /*
  * Riot Ingest service 
@@ -47,7 +48,7 @@ message AccountDataRequest {
 message AccountDataResponse {
     string gameName = 1;
     string tagLine = 2;
-    string puuId = 2;
+    string puuId = 3;
 }
 
 /*
@@ -92,4 +93,8 @@ message LeaderboardDataRequest {
 message LeaderboardDataResponse {
     ActId actId = 1;
     string response = 2;
+}
+
+message RiotApiError {
+  google.rpc.Status error = 1;
 }
