@@ -11,15 +11,38 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestServicer):
     def GetMatchData(
         self, request: riot_ingest_pb2.MatchDataRequest, context: grpc.ServicerContext
     ) -> riot_ingest_pb2.MatchDataResponse:
-        match_id = request.matchId  
-        status_code = 100     
-        if status_code == 200:
-            return riot_ingest_pb2.MatchDataResponse(matchId=match_id, response=self.loadMatchData())
+        
+        # Extract the 'matchId' from the incoming request message
+        match_id = request.matchId
+
+        # Make an HTTP request to the Riot API endpoint
+        url = f"https://api.riotgames.com/val/match/v1/matches/{match_id}"
+        headers = {"X-Riot-Token": "YOUR_RIOT_API_KEY"}
+        response = requests.get(url, headers=headers)
+
+
+      # Check if the request was successful (status code 200)
+        if response.status_code == 200:
+            # Parse the JSON response from Riot API (assuming it returns JSON)
+            match_data = response.json()
+
+            # Create a response message and populate it with the retrieved data
+            response_message = riot_api_pb2.GetMatchDataResponse()
+            response_message.match_id = match_data["matchId"]
+            response_message.response = json.dumps(match_data)
+
+            # Return the response message
+            return response_message
         else:
-            error_message = riot_ingest_pb2.ErrorMessageResponse(code=status_code, message="API call failed.")
-            context.set_code(grpc.StatusCode.INTERNAL)  # Set an appropriate gRPC status code for the error
+            # Handle error cases if the Riot API call fails
+            error_status = status_pb2.Status(
+                code=grpc.StatusCode.INTERNAL.value[0],
+                message="API call to Riot API failed."
+            )
+            riot_api_error = riot_api_pb2.RiotApiError(error=error_status)
+            context.set_code(grpc.StatusCode.INTERNAL)
             context.set_details("API call to Riot API failed.")
-            return error_message
+            return riot_api_error
 
 def serve() -> None:
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
