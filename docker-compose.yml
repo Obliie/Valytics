@@ -63,6 +63,8 @@ services:
     env_file:
       - .env
     volumes:
+      - ./services/common/src/test:/tests/common
+      - ./services/match/src/test:/tests/match
       - ./services/riot-ingest/src/test:/tests/riot-ingest
       - ./protobufs:/protobufs
     command: pytest /tests
