@@ -11,9 +11,43 @@ services:
     env_file:
       - .env
     volumes:
+      - ./services/common/src/main:/service_common
       - ./services/riot-ingest/src/main:/service
       - ./protobufs:/protobufs
-    command: watchmedo auto-restart --recursive --pattern="*.py" --directory="/service/" python3 /service/service.py
+    command: watchmedo auto-restart --recursive --pattern="*.py" --directory="/service/" --directory="/service_common/" python3 /service/service.py
+    profiles:
+      - backend
+    networks:
+      - valyticsmesh
+
+  match:
+    build:
+      context: ./
+      dockerfile: ./services/match/Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      - riot-ingest
+      - ranked-match-db
+    volumes:
+      - ./services/common/src/main:/service_common
+      - ./services/match/src/main:/service
+      - ./protobufs:/protobufs
+    command: watchmedo auto-restart --recursive --pattern="*.py" --directory="/service/" --directory="/service_common/" python3 /service/service.py
+    profiles:
+      - backend
+    networks:
+      - valyticsmesh
+
+  ###
+  # Databases
+  ###
+  ranked-match-db:
+    image: mongo:5.0.19
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${RANKED_MATCH_DB_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${RANKED_MATCH_DB_PASS}
+    command: --port ${RANKED_MATCH_DB_PORT}
     profiles:
       - backend
     networks:
@@ -63,10 +97,12 @@ services:
       dockerfile: ./containers/api-gateway/Dockerfile
       args:
         RIOT_INGEST_SERVICE_PORT: ${RIOT_INGEST_SERVICE_PORT}
+        MATCH_SERVICE_PORT: ${MATCH_SERVICE_PORT}
     env_file:
       - .env
     depends_on:
       - riot-ingest
+      - match
       - statsd-exporter
     command: /usr/local/bin/envoy -c /etc/envoy/envoy.json -l trace --log-path /tmp/envoy-info.log
     profiles:

@@ -26,7 +26,10 @@
     * [Frontend](#frontend)
     * [Backend](#backend)
   * [Testing](#testing)
-* [Exposed Service Ports](#exposed-service-ports)
+* [Service Ports](#service-ports)
+  * [Exposed Services](#exposed-services)
+  * [Internal Services](#internal-services)
+  * [Databases](#databases)
 
 # Development
 
@@ -69,10 +72,23 @@ Run pre-commit checks:
 docker compose --profile pre-commit up
 ```
 
-# Exposed Service Ports
-Ports for exposed services. This does not include internal services.
+# Service Ports
+## Exposed Services
 | Service                   | Default Port |
 | ------------------------- | ------------ |
 | Envoy API Gateway         | 8080         |
 | Envoy API Gateway Admin   | 21999        |
 | Prometheus                | 9090         |
+
+## Internal Services
+| Service                   | Default Port |
+| ------------------------- | ------------ |
+| Statsd - Stat listener    | 9125         |
+| Statsd - Stat data        | 9102         |
+| Riot Ingest Service       | 19990        |
+| Match Service             | 19991        |
+
+# Databases
+| Service                   | Default Port |
+| ------------------------- | ------------ |
+| Match - Ranked Match DB   | 27001        |

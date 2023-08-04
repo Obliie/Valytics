@@ -44,9 +44,21 @@
                   "route_config": {
                     "virtual_hosts": [
                       {
-                        "name": "riot-ingest-service",
+                        "name": "valytics-services",
                         "domains": [ "*" ],
                         "routes": [
+                          {
+                            "match": {
+                              "prefix": "/match"
+                            },
+                            "route": {
+                              "cluster": "match",
+                              "timeout": "0s",
+                              "max_stream_duration": {
+                                "grpc_timeout_header_max": "0s"
+                              }
+                            }
+                          },
                           {
                             "match": {
                               "prefix": "/riot-ingest"
@@ -98,7 +110,7 @@
         "http2_protocol_options": { },
         "lb_policy": "ROUND_ROBIN",
         "load_assignment": {
-          "cluster_name": "riot-ingesters",
+          "cluster_name": "riot-ingest",
           "endpoints": [
             {
               "lb_endpoints": [
@@ -108,6 +120,32 @@
                       "socket_address": {
                         "address": "riot-ingest",
                         "port_value": RIOT_INGEST_SERVICE_PORT
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "match",
+        "connect_timeout": "0.25s",
+        "type": "LOGICAL_DNS",
+        "http2_protocol_options": { },
+        "lb_policy": "ROUND_ROBIN",
+        "load_assignment": {
+          "cluster_name": "match",
+          "endpoints": [
+            {
+              "lb_endpoints": [
+                {
+                  "endpoint": {
+                    "address": {
+                      "socket_address": {
+                        "address": "match",
+                        "port_value": MATCH_SERVICE_PORT
                       }
                     }
                   }
