@@ -73,7 +73,7 @@ services:
       - ./protobufs:/protobufs
     working_dir: /protobufs
     command: generate --template /etc/buf/buf.gen.yaml
-    profiles: ['build', 'backend']
+    profiles: ['build', 'backend', 'test']
 
   ###
   # Test Containers
