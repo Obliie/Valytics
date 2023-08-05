@@ -7,8 +7,6 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "echo \"\\033[33mRunning eslint check\" &&  eslint .",
-    "typecheck": "echo \"\\033[33mRunning typescript check\" && tsc",
     "test": "echo \"\\033[33mRunning unit tests\" && jest"
   },
   "dependencies": {
