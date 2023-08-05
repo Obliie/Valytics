@@ -79,7 +79,7 @@ npm run web
 1. Copy the env.example file and adjust values appropriately
 
 ```sh
-cp env.example .env
+cp .env.example .env
 ```
 
 2. Start the backend microservice containers
@@ -94,12 +94,6 @@ Run service integration tests:
 
 ```sh
 docker compose --profile test up
-```
-
-Run pre-commit checks:
-
-```sh
-docker compose --profile pre-commit up
 ```
 
 # Service Ports
