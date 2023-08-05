@@ -1,11 +1,19 @@
 {
-  "extends": "expo/tsconfig.base",
-  "compilerOptions": {
-    "noImplicitAny": true,
-    "strict": true,
-    "noEmit": false,
-    "outDir": "build/"
-  },
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Expo",
 
-  "exclude": ["node_modules", "babel.config.js"]
+  "compilerOptions": {
+    "allowJs": true,
+    "esModuleInterop": true,
+    "jsx": "react-native",
+    "lib": ["DOM", "ESNext"],
+    "moduleResolution": "node",
+    "noEmit": false,
+    "noImplicitAny": true,
+    "outDir": "build/",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ESNext"
+  }
 }
