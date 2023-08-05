@@ -1,77 +1,137 @@
+"""Riot Ingest Service.
+
+This module implements the Riot Ingest service, responsible for processing and ingesting data
+from the Riot Games API. It configures the protofile schema to provide game statistics and
+other relevant information to the application.
+
+Usage:
+- Periodically fetches data from the Riot Games API to update the internal database.
+- Allows the application to retrieve game statistics through gRPC calls.
+
+Dependencies:
+- Relies on the Riot Games API for game data.
+- Utilizes Protocol Buffers (protobuf) for efficient communication via gRPC.
+
+Note:
+Ensure the correct Riot Games API key is provided for seamless data ingestion.
+"""
+
+
 from concurrent import futures
+import json
 import logging
 import os
 
 import grpc
-import json
-import requests
-
-riot_ingest_pb2, riot_ingest_pb2_grpc = grpc.protos_and_services(
-    "services/riot_ingest.proto")
-
-HTTP_TO_GRPC_STATUS = {
-    200: grpc.StatusCode.OK,
-    400: grpc.StatusCode.INVALID_ARGUMENT,
-    401: grpc.StatusCode.UNAUTHENTICATED,
-    403: grpc.StatusCode.PERMISSION_DENIED,
-    404: grpc.StatusCode.NOT_FOUND,
-    429: grpc.StatusCode.RESOURCE_EXHAUSTED,
-    500: grpc.StatusCode.INTERNAL,
-    503: grpc.StatusCode.UNAVAILABLE,
-}
+from protobufs.services import riot_ingest_pb2, riot_ingest_pb2_grpc
+from service_common.http_util import request_get
+from service_common.service_logging import init_logging, log_and_flush
 
 
-class RiotIngester(riot_ingest_pb2_grpc.RiotIngestServicer):
+RIOT_API_URL = "https://api.riotgames.com"
+MATCH_DATA_ENDPOINT = "{RIOT_API_URL}/val/match/v1/matches/{match_id}"
+ACCOUNT_DATA_ENDPOINT = "{RIOT_API_URL}/account/v1/accounts/by-riot-id/{game_name}/{tag_line}}"
+MATCH_LIST_DATA_ENDPOINT = "{RIOT_API_URL}/val/match/v1/matchlists/by-puuid/{puu_id}"
 
-    def ErrorHandler(
-        self, request: riot_ingest_pb2.MatchDataRequest, context: grpc.ServicerContext
-    ) -> riot_ingest_pb2.MatchDataResponse:
 
-        # Extract the 'matchId' from the incoming request message
-        match_id = request.matchId
+class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
+    """gRPC Service for Riot Ingest.
 
-        # Make an HTTP request to the Riot API endpoint
-        url = f"https://api.riotgames.com/val/match/v1/matches/{match_id}"
-        headers = {"X-Riot-Token": "YOUR_RIOT_API_KEY"}
-        try:
-            response = requests.get(url, headers=headers)
+    The RiotIngestServicer class handles incoming requests and provides game statistics
+    and relevant information to the application.
 
-            # Get the gRPC status code from the mapping or use UNKNOWN if not found
-            grpc_status = HTTP_TO_GRPC_STATUS.get(
-                response.status_code, grpc.StatusCode.UNKNOWN)
+    This class acts as an intermediary between the application and the Riot Games API,
+    enabling seamless data retrieval and organization for the application's components.
+    """
 
-            if grpc_status == grpc.StatusCode.OK:
-                # Parse the JSON response from Riot API (assuming it returns JSON)
-                match_data = response.json()
+    def GetMatchData(
+        self, request: riot_ingest_pb2.GetMatchDataRequest, context: grpc.ServicerContext
+    ) -> riot_ingest_pb2.GetMatchDataResponse:
+        """Fetches match data from Riot Games API and returns the retrieved data."""
+        url = MATCH_DATA_ENDPOINT.format(match_id=request.match_id)
+        headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
 
-                # Create a response message and populate it with the retrieved data
-                response_message = riot_api_pb2.GetMatchDataResponse()
-                response_message.match_id = match_data["matchId"]
-                response_message.response = json.dumps(match_data)
+        match_data = request_get(url, headers, context)
+        if match_data:
+            response_message = riot_ingest_pb2.GetMatchDataRequest()
+            parsed_matched_data = json.dumps(match_data)
+            # Can check ids here
+            response_message.match_id = parsed_matched_data["matchInfo"]["matchId"]
+            response_message.response = parsed_matched_data
+            return response_message
 
-                # Return the response message
-                return response_message
-                # Handle successful response
-            else:
-                context.set_code(grpc_status)
-                context.set_details(f"HTTP error: {response.status_code}")
+        return riot_ingest_pb2.GetMatchDataRequest()
 
-        except requests.RequestException as e:
-            context.set_code(grpc.StatusCode.INTERNAL)
-            context.set_details(f"Requests exception: {str(e)}")
-        except Exception as e:
-            context.set_code(grpc.StatusCode.INTERNAL)
-            context.set_details(f"Unhandled exception {str(e)}")
+    def GetAccountByRiotID(
+        self, request: riot_ingest_pb2.GetAccountByRiotIDRequest, context: grpc.ServicerContext
+    ) -> riot_ingest_pb2.GetAccountByRiotIDResponse:
+        """Fetches match data from Riot Games API and returns the retrieved data."""
 
-        return riot_api_pb2.GetMatchDataResponse()
+        url = ACCOUNT_DATA_ENDPOINT.format(game_name=request.game_name, tag_line=request.tag_line)
+        headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
+
+        account_data = request_get(url, headers, context)
+        if account_data:
+            response_message = riot_ingest_pb2.GetAccountByRiotIDResponse()
+            parsed_account_data = json.dumps(account_data)
+
+            response_message.game_name = parsed_account_data["gameName"]
+            response_message.tag_line = parsed_account_data["tagLine"]
+            response_message.pu_id = parsed_account_data["puuid"]
+            return response_message
+
+        return riot_ingest_pb2.GetMatchDataResponse()
+
+    def GetPlayerMatches(
+        self, request: riot_ingest_pb2.GetPlayerMatchesRequest, context: grpc.ServicerContext
+    ) -> riot_ingest_pb2.GetPlayerMatchesResponse:
+        """Fetches match data from Riot Games API and returns the retrieved data."""
+
+        url = MATCH_LIST_DATA_ENDPOINT.format(puu_id=request.puu_id)
+        headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
+
+        match_data = request_get(url, headers, context)
+        if match_data:
+            response_message = riot_ingest_pb2.GetPlayerMatchesResponse()
+
+            matches = []
+            parsed_match_data = json.dumps(match_data)
+            match_list = parsed_match_data["history"]
+
+            for match in match_list:
+                match = riot_ingest_pb2.PlayersMatches
+                match.match_id = match_list["matchId"]
+                match.game_start_time = match_list["gameStartTimeMillis"]
+                match.queue_id = match_list["queueId"]
+                matches.append(match)
+
+            response_message.puu_id = parsed_match_data["puuid"]
+            response_message.history.extend(matches)
+
+        return riot_ingest_pb2.GetPlayerMatchesResponse()
+
+    def GetContentData(self, context: grpc.ServicerContext) -> riot_ingest_pb2.GetContentDataResponse:
+        """Fetches match data from Riot Games API and returns the retrieved data."""
+
+        url = MATCH_DATA_ENDPOINT
+        headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
+
+        context_data = request_get(url, headers, context)
+        if context_data:
+            response_message = riot_ingest_pb2.GetContentDataResponse()
+            parsed_account_data = json.dumps(context_data)
+
+            response_message.response = parsed_account_data
+            return response_message
+
+        return riot_ingest_pb2.GetMatchDataResponse()
 
 
 def serve() -> None:
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    riot_ingest_pb2_grpc.add_RiotIngestServicer_to_server(
-        RiotIngester(), server)
-    server.add_insecure_port(
-        f"[::]:{ os.environ['RIOT_INGEST_SERVICE_PORT'] }")
+    riot_ingest_pb2_grpc.add_RiotIngestServiceServicer_to_server(RiotIngestServicer(), server)
+    server.add_insecure_port(f"[::]:{ os.environ['RIOT_INGEST_SERVICE_PORT'] }")
+    log_and_flush(logging.INFO, "Starting Riot Ingest service...")
     server.start()
     server.wait_for_termination()
 
