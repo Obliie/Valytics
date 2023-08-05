@@ -1,0 +1,75 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: destroyed-symlinks
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: no-commit-to-branch
+  - repo: https://github.com/bufbuild/buf
+    rev: 'v1.25.1'
+    hooks:
+      - id: buf-lint
+        files: ^protobufs/.*\.proto$
+  - repo: https://github.com/psf/black
+    rev: 23.7.0
+    hooks:
+      - id: black
+        args: [--line-length=120]
+  - repo: https://github.com/PyCQA/flake8
+    rev: 6.1.0
+    hooks:
+      - id: flake8
+        additional_dependencies:
+          [
+            'flake8-annotations',
+            'flake8-annotations-complexity',
+            'flake8-bugbear',
+            'flake8-builtins',
+            'flake8-comprehensions',
+            'flake8-docstrings',
+            'flake8-eradicate',
+            'flake8-expression-complexity',
+            'flake8-import-order',
+            'flake8-print',
+            'flake8-pytest-style',
+            'flake8-return',
+          ]
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: 'v3.0.1'
+    hooks:
+      - id: prettier
+        exclude: ^envoy.json
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: 'v8.46.0'
+    hooks:
+      - id: eslint
+        files: \.[jt]sx?$
+        types: [file]
+        args: [--max-warnings=0]
+        exclude: |
+          (?x)^(
+            .eslintrc.js|
+            app-web/babel.config.js
+          )$
+        additional_dependencies:
+          - eslint@8.46.0
+          - eslint-config-universe@11.3.0
+          - eslint-config-airbnb@19.0.4
+          - eslint-config-airbnb-typescript@17.1.0
+          - eslint-webpack-plugin@4.0.1
+          - eslint-plugin-import@2.28.0
+          - eslint-plugin-jsx-a11y@6.7.1
+          - eslint-plugin-node@11.1.0
+          - eslint-plugin-prettier@5.0.0
+          - eslint-plugin-react@7.33.1
+          - eslint-plugin-react-hooks@4.6.0
+          - '@typescript-eslint/eslint-plugin@6.2.1'
+          - '@typescript-eslint/parser@6.2.1'

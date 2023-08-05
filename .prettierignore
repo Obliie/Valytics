@@ -1,0 +1,2 @@
+# Ignore Envoy JSON files
+**/envoy.json

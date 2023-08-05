@@ -3,9 +3,8 @@ import logging
 import os
 
 import grpc
+from protobufs.services import match_pb2, match_pb2_grpc
 from service_common.service_logging import init_logging, log_and_flush
-
-match_pb2, match_pb2_grpc = grpc.protos_and_services("services/match.proto")
 
 
 class MatchServicer(match_pb2_grpc.MatchServicer):

@@ -3,9 +3,8 @@ import logging
 import os
 
 import grpc
+from protobufs.services import riot_ingest_pb2, riot_ingest_pb2_grpc
 from service_common.service_logging import init_logging, log_and_flush
-
-riot_ingest_pb2, riot_ingest_pb2_grpc = grpc.protos_and_services("services/riot_ingest.proto")
 
 
 class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestServicer):
