@@ -8,7 +8,6 @@
 
   "python.formatting.blackArgs": ["--line-length", "120"],
   "[python]": {
-    "editor.defaultFormatter": "ms-python.autopep8"
-  },
-  "python.formatting.provider": "none"
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  }
 }
