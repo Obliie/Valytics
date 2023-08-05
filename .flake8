@@ -1,6 +1,6 @@
 [flake8]
 ignore = ANN101
-exclude = 
+exclude =
     .git,
     __pycache__,
     *_pb2.py,

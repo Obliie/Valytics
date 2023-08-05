@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 name: valytics
 services:
   ###
@@ -10,11 +10,13 @@ services:
       dockerfile: ./services/riot-ingest/Dockerfile
     env_file:
       - .env
+    depends_on:
+      - proto-builder
     volumes:
       - ./services/common/src/main:/service_common
       - ./services/riot-ingest/src/main:/service
-      - ./protobufs:/protobufs
-    command: watchmedo auto-restart --recursive --pattern="*.py" --directory="/service/" --directory="/service_common/" python3 /service/service.py
+      - ./protobufs/build/python:/protobufs
+    command: watchmedo auto-restart --recursive --pattern="*.py" --directory="/service/" --directory="/service_common/" --directory="/protobufs/" python3 /service/service.py
     profiles:
       - backend
     networks:
@@ -27,13 +29,14 @@ services:
     env_file:
       - .env
     depends_on:
+      - proto-builder
       - riot-ingest
       - ranked-match-db
     volumes:
       - ./services/common/src/main:/service_common
       - ./services/match/src/main:/service
-      - ./protobufs:/protobufs
-    command: watchmedo auto-restart --recursive --pattern="*.py" --directory="/service/" --directory="/service_common/" python3 /service/service.py
+      - ./protobufs/build/python:/protobufs
+    command: watchmedo auto-restart --recursive --pattern="*.py" --directory="/service/" --directory="/service_common/" --directory="/protobufs/" python3 /service/service.py
     profiles:
       - backend
     networks:
@@ -54,6 +57,21 @@ services:
       - valyticsmesh
 
   ###
+  # Build Containers
+  ###
+  proto-builder:
+    build:
+      context: ./
+      dockerfile: ./containers/proto-builder/Dockerfile
+    env_file:
+      - .env
+    volumes:
+      - ./protobufs:/protobufs
+    working_dir: /protobufs
+    command: generate --template /etc/buf/buf.gen.yaml
+    profiles: ['build', 'backend']
+
+  ###
   # Test Containers
   ###
   integration:
@@ -62,33 +80,18 @@ services:
       dockerfile: ./containers/integration-test/Dockerfile
     env_file:
       - .env
+    depends_on:
+      - proto-builder
     volumes:
       - ./services/common/src/test:/tests/common
       - ./services/match/src/test:/tests/match
       - ./services/riot-ingest/src/test:/tests/riot-ingest
-      - ./protobufs:/protobufs
+      - ./protobufs/build/python:/protobufs
     command: pytest /tests
     profiles:
       - test
     networks:
       - valyticsmesh
-
-  python-lint:
-    build:
-      context: ./
-      dockerfile: ./containers/python-lint/Dockerfile
-    volumes:
-    - ./services:/services
-    command: 
-      - /bin/bash
-      - -c
-      - |
-        black --version
-        black --line-length 120 /services
-        flake8 --version
-        flake8 /services
-    profiles: [ "pre-commit", "pylint" ]
-    network_mode: none
 
   ###
   # Envoy and API stats
@@ -128,14 +131,13 @@ services:
       dockerfile: ./containers/prometheus/Dockerfile
     depends_on:
       - statsd-exporter
-    command: "--config.file=/etc/prometheus/prometheus.yaml"
+    command: '--config.file=/etc/prometheus/prometheus.yaml'
     profiles:
       - backend
     ports:
       - ${HOST}:${PROMETHEUS_PORT}:9090
     networks:
       - valyticsmesh
-
 
 networks:
   valyticsmesh:

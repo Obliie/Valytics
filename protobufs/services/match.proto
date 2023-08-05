@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package services;
 
-// Match service 
+// Match service
 service Match {
-    
+
 }

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package services;
 
-// Riot Ingest service 
+// Riot Ingest service
 service RiotIngest {
     rpc GetMatchData(MatchDataRequest) returns (MatchDataResponse) {}
 }

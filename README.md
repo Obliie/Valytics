@@ -18,77 +18,111 @@
   </p>
 </p>
 
-
 # Contents
-* [Development](#development)
-  * [Prerequisites](#prerequisites)
-  * [Setup](#setup)
-    * [Frontend](#frontend)
-    * [Backend](#backend)
-  * [Testing](#testing)
-* [Service Ports](#service-ports)
-  * [Exposed Services](#exposed-services)
-  * [Internal Services](#internal-services)
-  * [Databases](#databases)
+
+- [Development](#development)
+  - [Prerequisites](#prerequisites)
+  - [Setup](#setup)
+    - [Frontend](#frontend)
+    - [Backend](#backend)
+  - [Testing](#testing)
+- [Service Ports](#service-ports)
+  - [Exposed Services](#exposed-services)
+  - [Internal Services](#internal-services)
+  - [Databases](#databases)
 
 # Development
 
 ## Prerequisites
-* npm
-* docker
+
+- npm
+- docker
+- python
+- pip
 
 ## Setup
+
+1. Install pre-commit
+
+```sh
+pip install pre-commit
+```
+
+2. Install pre-commit hooks
+
+```sh
+pre-commit install
+```
+
 ### Frontend
+
 1. Move into the frontend development directory
+
 ```sh
 cd app-web
 ```
+
 2. Install NPM packages
+
 ```sh
 npm install
 ```
+
 3. Start the Expo Metro bundler
+
 ```sh
 npm run web
 ```
+
 ### Backend
+
 1. Copy the env.example file and adjust values appropriately
+
 ```sh
 cp env.example .env
 ```
+
 2. Start the backend microservice containers
+
 ```sh
 docker compose --profile backend up
 ```
 
 ## Testing
+
 Run service integration tests:
+
 ```sh
 docker compose --profile test up
 ```
 
 Run pre-commit checks:
+
 ```sh
 docker compose --profile pre-commit up
 ```
 
 # Service Ports
+
 ## Exposed Services
-| Service                   | Default Port |
-| ------------------------- | ------------ |
-| Envoy API Gateway         | 8080         |
-| Envoy API Gateway Admin   | 21999        |
-| Prometheus                | 9090         |
+
+| Service                 | Default Port |
+| ----------------------- | ------------ |
+| Envoy API Gateway       | 8080         |
+| Envoy API Gateway Admin | 21999        |
+| Prometheus              | 9090         |
 
 ## Internal Services
-| Service                   | Default Port |
-| ------------------------- | ------------ |
-| Statsd - Stat listener    | 9125         |
-| Statsd - Stat data        | 9102         |
-| Riot Ingest Service       | 19990        |
-| Match Service             | 19991        |
+
+| Service                | Default Port |
+| ---------------------- | ------------ |
+| Statsd - Stat listener | 9125         |
+| Statsd - Stat data     | 9102         |
+| Riot Ingest Service    | 19990        |
+| Match Service          | 19991        |
 
 # Databases
-| Service                   | Default Port |
-| ------------------------- | ------------ |
-| Match - Ranked Match DB   | 27001        |
+
+| Service                 | Default Port |
+| ----------------------- | ------------ |
+| Match - Ranked Match DB | 27001        |
