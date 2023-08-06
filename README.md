@@ -26,6 +26,7 @@
     - [Frontend](#frontend)
     - [Backend](#backend)
   - [Testing](#testing)
+  - [Build](#build)
 - [Service Ports](#service-ports)
   - [Exposed Services](#exposed-services)
   - [Internal Services](#internal-services)
@@ -94,6 +95,14 @@ Run service integration tests:
 
 ```sh
 docker compose --profile test up
+```
+
+## Build
+
+Rebuild protobuf files:
+
+```sh
+docker compose --profile build up
 ```
 
 # Service Ports
