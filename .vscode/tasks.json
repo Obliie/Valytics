@@ -1,0 +1,35 @@
+{
+  "version": "2.0.0",
+  "presentation": {
+    "reveal": "always"
+  },
+  "tasks": [
+    {
+      "label": "Valytics: Start backend",
+      "type": "shell",
+      "command": "docker compose --profile backend up",
+      "presentation": {
+        "group": "backend",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Valytics: Run tests",
+      "type": "shell",
+      "command": "docker compose --profile test up",
+      "presentation": {
+        "group": "backend",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Valytics: Build protobufs",
+      "type": "shell",
+      "command": "docker compose --profile build up",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "dedicated"
+      }
+    }
+  ]
+}

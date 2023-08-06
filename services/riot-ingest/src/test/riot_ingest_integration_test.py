@@ -3,7 +3,7 @@ import os
 
 import grpc
 
-riot_ingest_pb2, riot_ingest_pb2_grpc = grpc.protos_and_services("services/riot_ingest.proto")
+from protobufs.services import riot_ingest_pb2, riot_ingest_pb2_grpc
 
 
 def test_get_match_data() -> None:

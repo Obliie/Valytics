@@ -2,7 +2,7 @@ import os
 
 import grpc
 
-match_pb2, match_pb2_grpc = grpc.protos_and_services("services/match.proto")
+from protobufs.services import match_pb2, match_pb2_grpc
 
 
 def test_example() -> None:

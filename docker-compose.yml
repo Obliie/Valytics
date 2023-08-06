@@ -11,7 +11,8 @@ services:
     env_file:
       - .env
     depends_on:
-      - proto-builder
+      proto-builder:
+        condition: service_completed_successfully
     volumes:
       - ./services/common/src/main:/service_common
       - ./services/riot-ingest/src/main:/service
@@ -29,9 +30,12 @@ services:
     env_file:
       - .env
     depends_on:
-      - proto-builder
-      - riot-ingest
-      - ranked-match-db
+      proto-builder:
+        condition: service_completed_successfully
+      riot-ingest:
+        condition: service_started
+      ranked-match-db:
+        condition: service_started
     volumes:
       - ./services/common/src/main:/service_common
       - ./services/match/src/main:/service
@@ -80,8 +84,6 @@ services:
       dockerfile: ./containers/integration-test/Dockerfile
     env_file:
       - .env
-    depends_on:
-      - proto-builder
     volumes:
       - ./services/common/src/test:/tests/common
       - ./services/match/src/test:/tests/match
@@ -106,9 +108,12 @@ services:
     env_file:
       - .env
     depends_on:
-      - riot-ingest
-      - match
-      - statsd-exporter
+      riot-ingest:
+        condition: service_started
+      match:
+        condition: service_started
+      statsd-exporter:
+        condition: service_started
     command: /usr/local/bin/envoy -c /etc/envoy/envoy.json -l trace --log-path /tmp/envoy-info.log
     profiles:
       - backend
@@ -130,7 +135,8 @@ services:
       context: ./
       dockerfile: ./containers/prometheus/Dockerfile
     depends_on:
-      - statsd-exporter
+      statsd-exporter:
+        condition: service_started
     command: '--config.file=/etc/prometheus/prometheus.yaml'
     profiles:
       - backend
