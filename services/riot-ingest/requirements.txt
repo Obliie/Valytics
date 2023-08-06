@@ -1,4 +1,1 @@
-grpcio==1.56.2
-grpcio-tools==1.56.2
-protobuf==4.23.4
 watchdog[watchmedo]==3.0.0
