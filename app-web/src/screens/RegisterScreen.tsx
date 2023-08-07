@@ -125,7 +125,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
         <Text style={appStyles.buttonText}>Sign Up</Text>
       </Button>
 
-      <Breaker color="white" height={2} />
+      <Breaker color="grey" height={2} />
 
       <Button
         mode="contained"
@@ -143,7 +143,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
         <Text style={appStyles.buttonText}>Sign Up with Discord</Text>
       </Button>
 
-      <Breaker color="white" height={2} />
+      <Breaker color="grey" height={2} />
 
       <View style={styles.row}>
         <Text>Already have an account? </Text>

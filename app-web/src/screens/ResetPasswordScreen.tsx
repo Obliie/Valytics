@@ -64,7 +64,7 @@ const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({ navigation })
         <Text style={appStyles.buttonText}>Send Instructions</Text>
       </Button>
 
-      <Breaker color="white" height={2} />
+      <Breaker color="grey" height={2} />
 
       <Button mode="contained" onPress={backToLogin} style={{ marginTop: 16 }}>
         <Text style={appStyles.buttonText}>Back to Login</Text>
