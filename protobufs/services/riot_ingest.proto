@@ -2,7 +2,7 @@ syntax = "proto3";
 package services;
 
 /*
- * Riot Ingest service 
+ * Riot Ingest service
  * This service provides various RPC methods to retrieve data related to Riot Games.
 */
 service RiotIngestService {
@@ -110,6 +110,15 @@ enum ActId {
   EPISODE_7_ACT_1 = 21;
 }
 
+enum shard {
+    NA = 0;
+    LATAM = 1;
+    br = 2;
+    eu = 3;
+    ap = 4;
+    kr = 5;
+}
+
 message GetLeaderboardDataRequest {
     ActId act_id = 1;
 }
@@ -123,7 +132,7 @@ message PlayerDto {
 }
 message GetLeaderboardDataResponse {
     ActId act_id = 1;
-    string shard = 2;
+    shard shard = 2;
     uint64 total_players = 3;
     repeated PlayerDto players = 4;
 }
