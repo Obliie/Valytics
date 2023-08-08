@@ -32,7 +32,7 @@ RIOT_API_URL = "https://api.riotgames.com"
 MATCH_DATA_ENDPOINT = "{RIOT_API_URL}/val/match/v1/matches/{match_id}"
 ACCOUNT_DATA_ENDPOINT = "{RIOT_API_URL}/account/v1/accounts/by-riot-id/{game_name}/{tag_line}}"
 MATCH_LIST_DATA_ENDPOINT = "{RIOT_API_URL}/val/match/v1/matchlists/by-puuid/{puu_id}"
-
+LEADERBOARD_DATA_ENDPOINT = "{RIOT_API_URL}/val/ranked/v1/leaderboards/by-act/{actId})"
 
 class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
     """gRPC Service for Riot Ingest.
@@ -107,13 +107,14 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
 
             response_message.puu_id = parsed_match_data["puuid"]
             response_message.history.extend(matches)
+            return response_message
 
         return riot_ingest_pb2.GetPlayerMatchesResponse()
 
     def GetContentData(self, context: grpc.ServicerContext) -> riot_ingest_pb2.GetContentDataResponse:
         """Fetches match data from Riot Games API and returns the retrieved data."""
 
-        url = MATCH_DATA_ENDPOINT
+        url = MATCH_DATA_ENDPOINT ##
         headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
 
         context_data = request_get(url, headers, context)
@@ -125,6 +126,42 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
             return response_message
 
         return riot_ingest_pb2.GetMatchDataResponse()
+    
+
+    def GetLeaderboardData(
+        self, request: riot_ingest_pb2.GetLeaderboardDataRequest, context: grpc.ServicerContext
+    ) -> riot_ingest_pb2.GetLeaderboardDataResponse:
+        """Fetches match data from Riot Games API and returns the retrieved data."""
+
+        url = LEADERBOARD_DATA_ENDPOINT.format(puu_id=request.act_id)
+        headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
+
+        leaderboard_data = request_get(url, headers, context)
+        if leaderboard_data:
+            response_message = riot_ingest_pb2.GetLeaderboardDataResponse()
+
+            player_data = []
+            parsed_leaderboard_data = json.dumps(leaderboard_data)
+            players_list = parsed_leaderboard_data["players"]
+
+            for player in players_list:
+                player = riot_ingest_pb2.PlayerDto
+                player.puu_id = players_list["puuid"]
+                player.game_name = players_list["gameName"]
+                player.tag_line = players_list["tagLine"]
+                player.leaderboard_rank = players_list["leaderboardRank"]
+                player.ranked_rating = players_list["rankedRating"]
+                player.number_of_wins = players_list["numberOfWins"]
+                player_data.append(player)
+
+            response_message.act_id = parsed_leaderboard_data["actId"]
+            response_message.shard = parsed_leaderboard_data["shard"]
+            response_message.total_players = parsed_leaderboard_data["totalPlayers"]
+            response_message.players.extend(player_data)
+            return response_message
+
+        return riot_ingest_pb2.GetPlayerMatchesResponse()
+
 
 
 def serve() -> None:

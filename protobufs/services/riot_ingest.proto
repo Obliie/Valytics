@@ -60,7 +60,7 @@ message GetPlayerMatchesRequest {
 
 message PlayersMatches {
   string match_id = 1;
-  int64 game_start_time = 2;
+  uint64 game_start_time = 2;
   string queue_id = 3;
 }
 
@@ -86,16 +86,44 @@ message GetContentDataResponse {
  * Used to get data related to leaderboards, possibly for competitive rankings.
 */
 enum ActId {
-  ACT_ID_UNSPECIFIED = 0;
-  ACT_ID_1 = 1;
-  // Add more Act IDs as needed...
+  CLOSED_BETA_ACT_1 = 0;
+  CLOSED_BETA_ACT_2 = 1;
+  CLOSED_BETA_ACT_3 = 2;
+  EPISODE_1_ACT_1 = 3;
+  EPISODE_1_ACT_2 = 4;
+  EPISODE_1_ACT_3 = 5;
+  EPISODE_2_ACT_1 = 6;
+  EPISODE_2_ACT_2 = 7;
+  EPISODE_2_ACT_3 = 8;
+  EPISODE_3_ACT_1 = 9;
+  EPISODE_3_ACT_2 = 10;
+  EPISODE_3_ACT_3 = 11;
+  EPISODE_4_ACT_1 = 12;
+  EPISODE_4_ACT_2 = 13;
+  EPISODE_4_ACT_3 = 14;
+  EPISODE_5_ACT_1 = 15;
+  EPISODE_5_ACT_2 = 16;
+  EPISODE_5_ACT_3 = 17;
+  EPISODE_6_ACT_1 = 18;
+  EPISODE_6_ACT_2 = 19;
+  EPISODE_6_ACT_3 = 20;
+  EPISODE_7_ACT_1 = 21;
 }
 
 message GetLeaderboardDataRequest {
     ActId act_id = 1;
 }
-
+message PlayerDto {
+    string puu_id = 1;
+    string game_name = 2;
+    string tag_line = 3;
+    uint64 leaderboard_rank = 4;
+    uint64 ranked_rating = 5;
+    uint64 number_of_wins = 6;
+}
 message GetLeaderboardDataResponse {
     ActId act_id = 1;
-    string response = 2;
+    string shard = 2;
+    uint64 total_players = 3;
+    repeated PlayerDto players = 4;
 }
