@@ -6,11 +6,12 @@ import Button from '../components/Button';
 import Header from '../components/Header';
 import Logo from '../components/Logo';
 import Paragraph from '../components/Paragraph';
+import { DashboardNavigationProp, DashboardRouteProp } from '../helpers/NavigationTypes';
 import { appStyles } from '../theme/mainStyles';
 
 interface DashboardProps {
-  navigation: any;
-  route: any;
+  navigation: DashboardNavigationProp;
+  route: DashboardRouteProp;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ navigation, route }) => {
@@ -19,7 +20,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation, route }) => {
       <Logo />
       <Header>Valytics</Header>
       {/* Display entered email */}
-      <Paragraph>Email: {route.params.email}</Paragraph>
+      <Paragraph>Email: {route.params?.email}</Paragraph>
       <Button
         mode="contained"
         onPress={() =>

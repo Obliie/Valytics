@@ -9,10 +9,11 @@ import Header from '../components/Header';
 import InputField from '../components/InputField';
 import Logo from '../components/Logo';
 import { emailValidator } from '../helpers/emailValidator';
+import { ResetPasswordScreenNavigationProp } from '../helpers/NavigationTypes';
 import { appStyles } from '../theme/mainStyles';
 
 interface ResetPasswordScreenProps {
-  navigation: any;
+  navigation: ResetPasswordScreenNavigationProp;
 }
 
 const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({ navigation }) => {

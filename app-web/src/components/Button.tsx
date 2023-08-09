@@ -1,21 +1,14 @@
 import React from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import { Image, ImageSourcePropType, StyleSheet, View } from 'react-native';
 import { ButtonProps, Button as PaperButton } from 'react-native-paper';
-
 import { theme } from '../theme/theme';
 
 interface CustomButtonProps extends ButtonProps {
-  icon?: any;
+  icon?: ImageSourcePropType;
   buttonColor?: string;
 }
 
-const CustomButton: React.FC<CustomButtonProps> = ({
-  style,
-  icon,
-  buttonColor,
-  children,
-  ...props
-}) => {
+const CustomButton: React.FC<CustomButtonProps> = ({ style, icon, buttonColor, children, ...props }) => {
   // Check if an icon is provided
   const hasIcon = !!icon;
 
@@ -79,5 +72,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
+
+CustomButton.defaultProps = {
+  icon: undefined,
+  buttonColor: theme.colors.primary,
+};
 
 export default CustomButton;

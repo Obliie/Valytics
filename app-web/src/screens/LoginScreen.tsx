@@ -8,13 +8,15 @@ import Button from '../components/Button';
 import Header from '../components/Header';
 import InputField from '../components/InputField';
 import Logo from '../components/Logo';
+import { LoginScreenNavigationProp } from '../helpers/NavigationTypes';
 import { emailValidator } from '../helpers/emailValidator';
 import { passwordValidator } from '../helpers/passwordValidator';
+
 import { appStyles } from '../theme/mainStyles';
 import { theme } from '../theme/theme';
 
 interface LoginScreenProps {
-  navigation: any;
+  navigation: LoginScreenNavigationProp;
 }
 
 export default function LoginScreen({ navigation }: LoginScreenProps) {

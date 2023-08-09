@@ -9,6 +9,7 @@ import Button from '../components/Button';
 import Header from '../components/Header';
 import InputField from '../components/InputField';
 import Logo from '../components/Logo';
+import { RegisterScreenNavigationProp } from '../helpers/NavigationTypes';
 import { emailValidator } from '../helpers/emailValidator';
 import { nameValidator } from '../helpers/nameValidator';
 import { passwordValidator } from '../helpers/passwordValidator';
@@ -16,7 +17,7 @@ import { appStyles } from '../theme/mainStyles';
 import { theme } from '../theme/theme';
 
 interface RegisterScreenProps {
-  navigation: any; // Replace 'any' with the correct navigation type
+  navigation: RegisterScreenNavigationProp;
 }
 
 const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {

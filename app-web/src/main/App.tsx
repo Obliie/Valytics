@@ -4,10 +4,11 @@ import { registerRootComponent } from 'expo';
 import { Provider } from 'react-native-paper';
 
 import React from 'react';
+import { RootStackParamList } from '../helpers/NavigationTypes';
 import { Dashboard, LoginScreen, RegisterScreen, ResetPasswordScreen } from '../screens';
 import { theme } from '../theme/theme';
 
-const Stack = createStackNavigator();
+const Stack = createStackNavigator<RootStackParamList>();
 
 export default function App() {
   return (
