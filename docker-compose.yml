@@ -89,6 +89,7 @@ services:
       - ./services/match/src/test:/tests/match
       - ./services/riot-ingest/src/test:/tests/riot-ingest
       - ./protobufs/build/python:/protobufs
+      - ./services/common/src/main:/service_common
     command: pytest /tests
     profiles:
       - test
