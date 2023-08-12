@@ -149,10 +149,8 @@ services:
     build:
       context: ./
       dockerfile: ./containers/mock-server/Dockerfile
-    command: java -jar /mockserver-netty.jar -logLevel INFO
     profiles:
       - backend
-
     networks:
       - valyticsmesh
 
