@@ -149,11 +149,10 @@ services:
     build:
       context: ./
       dockerfile: ./containers/mock-server/Dockerfile
-    command: java -jar /mockserver-netty.jar -serverPort 1080 -logLevel INFO -mockServerLoggerLogLevel INFO -statefulLogLevel INFO -staticLogLevel INFO -corsEnabled true -watchInitializationRequest true -initializationJsonPath /mockserver-config.json
+    command: java -jar /mockserver-netty.jar -logLevel INFO
     profiles:
       - backend
-    ports:
-      - ${HOST}:${MOCKSERVER_PORT}:1080 # Replace MOCKSERVER_PORT with the desired port
+
     networks:
       - valyticsmesh
 
