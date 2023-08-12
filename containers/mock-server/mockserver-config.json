@@ -1,0 +1,13 @@
+{
+  "httpRequest": {
+    "method": "GET",
+    "path": "/val/match/v1/matches/12345"
+  },
+  "httpResponse": {
+    "statusCode": 200,
+    "body": "{\"data\": \"Mocked match data for match 12345\"}",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
