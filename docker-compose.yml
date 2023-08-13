@@ -75,6 +75,15 @@ services:
     command: generate --template /etc/buf/buf.gen.yaml
     profiles: ['build', 'backend']
 
+  frontend:
+  build:
+    context: ./
+    dockerfile: ./app-web/Dockerfile
+  volumes:
+    - ./app-web:/app
+  ports:
+    - '19006:19006'
+
   ###
   # Test Containers
   ###
