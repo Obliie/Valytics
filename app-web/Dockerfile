@@ -8,6 +8,6 @@ RUN npm install
 
 COPY . .
 
-EXPOSE 19006
+EXPOSE ${FRONTEND_METRO_PORT} ${FRONTEND_EXPO_DEVTOOLS_PORT}
 
 CMD ["npm", "run", "web"]

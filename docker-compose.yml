@@ -76,13 +76,15 @@ services:
     profiles: ['build', 'backend']
 
   frontend:
-    build:
-      context: ./
-      dockerfile: ./app-web/Dockerfile
+    image: node:lts-alpine3.18
+    env_file:
+      - .env
     volumes:
       - ./app-web:/app
+    working_dir: /app
+    command: npm run web
     ports:
-      - '19006:19006'
+      - '${HOST}:${FRONTEND_METRO_PORT}:${FRONTEND_EXPO_DEVTOOLS_PORT}'
 
   ###
   # Test Containers
