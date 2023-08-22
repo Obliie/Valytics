@@ -84,8 +84,8 @@ services:
     working_dir: /app
     command: npm run web
     ports:
-      - '${FRONTEND_METRO_PORT}:19000'
-      - '${FRONTEND_EXPO_DEVTOOLS_PORT}:19006'
+      - '${HOST}:${FRONTEND_METRO_PORT}:19000'
+      - '${HOST}:${FRONTEND_EXPO_DEVTOOLS_PORT}:19006'
 
   ###
   # Test Containers
