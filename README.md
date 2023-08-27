@@ -105,12 +105,6 @@ Rebuild protobuf files:
 docker compose --profile build up
 ```
 
-Build frontend container:
-
-```sh
-docker compose --profile frontend up
-```
-
 # Service Ports
 
 ## Exposed Services
