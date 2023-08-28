@@ -148,7 +148,7 @@ services:
   mockserver:
     build:
       context: ./
-      dockerfile: ./containers/mock-server/Dockerfile
+      dockerfile: ./containers/etc/mock-server/Dockerfile
     profiles:
       - backend
     networks:
