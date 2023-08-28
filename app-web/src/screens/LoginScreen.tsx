@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Text } from 'react-native-paper';
-
 import Background from '../components/Background';
 import Breaker from '../components/Breaker';
 import Button from '../components/Button';
@@ -54,6 +53,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
   const onDiscordLoginPressed = () => {
     // TO DO: Handle Discord login
     console.log('DISCORD LOGIN');
+    console.log(`http://${process.env.HOST}:${process.env.NODE_PORT}/auth/discord/login`);
   };
 
   return (
@@ -100,7 +100,9 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
       </Button>
 
       <Button mode="contained" onPress={onDiscordLoginPressed} icon={require('../../assets/discord-logo.png')}>
-        <Text style={appStyles.buttonText}>Login with Discord</Text>
+        <a href="http://localhost:3000/auth/discord/login">
+          <Text style={appStyles.buttonText}>Login with Discord</Text>
+        </a>
       </Button>
 
       <Breaker color="grey" height={2} />
