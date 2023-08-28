@@ -25,6 +25,7 @@
   - [Setup](#setup)
     - [Frontend](#frontend)
     - [Backend](#backend)
+      - [Mockserver](#Mockserver)
   - [Testing](#testing)
   - [Build](#build)
 - [Service Ports](#service-ports)
@@ -89,6 +90,12 @@ cp .env.example .env
 docker compose --profile backend up
 ```
 
+#### Mockserver
+
+After executing the commands specified in backend the mockserver service will be up and running.
+If you want to add in any mock data you have to edit the mockserver-config.json file which
+includes an example.
+
 ## Testing
 
 Run service integration tests:
@@ -114,6 +121,7 @@ docker compose --profile build up
 | Envoy API Gateway       | 8080         |
 | Envoy API Gateway Admin | 21999        |
 | Prometheus              | 9090         |
+| Mockserver              | 1080         |
 
 ## Internal Services
 
