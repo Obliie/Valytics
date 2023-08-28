@@ -114,6 +114,32 @@ Rebuild protobuf files:
 docker compose --profile build up
 ```
 
+Build frontend container:
+
+1. Copy the env.example file and adjust values appropriately
+
+```sh
+cp .env.example .env
+```
+
+2. Move into the frontend development directory
+
+```sh
+cd app-web
+```
+
+3. Install NPM packages
+
+```sh
+npm install
+```
+
+4. Build container
+
+```sh
+docker compose --profile frontend up
+```
+
 # Service Ports
 
 ## Exposed Services

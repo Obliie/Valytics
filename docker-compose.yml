@@ -75,6 +75,18 @@ services:
     command: generate --template /etc/buf/buf.gen.yaml
     profiles: ['build', 'backend']
 
+  frontend:
+    image: node:lts-alpine3.18
+    env_file:
+      - .env
+    volumes:
+      - ./app-web:/app
+    working_dir: /app
+    command: npm run web
+    ports:
+      - '${HOST}:${FRONTEND_METRO_PORT}:19000'
+      - '${HOST}:${FRONTEND_EXPO_DEVTOOLS_PORT}:19006'
+
   ###
   # Test Containers
   ###
