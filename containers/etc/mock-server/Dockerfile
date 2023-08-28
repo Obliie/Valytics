@@ -1,8 +1,5 @@
-# Use the mockserver/mockserver base image
-FROM mockserver/mockserver
+FROM mockserver/mockserver:latest
 
-# Set the environment variable
-ENV MOCKSERVER_INITIALIZATION_JSON_PATH /config/mockserver-config.json
+ENV MOCKSERVER_INITIALIZATION_JSON_PATH /etc/mockserver/mockserver-config.json
 
-# Copy your custom configuration file into the container
-COPY containers/etc/mock-server/mockserver-config.json /config/mockserver-config.json
+COPY containers/etc/mock-server/mockserver-config.json /etc/mockserver/mockserver-config.json
