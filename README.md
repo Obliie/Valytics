@@ -123,7 +123,6 @@ docker compose --profile build up
 | Envoy API Gateway       | 8080         |
 | Envoy API Gateway Admin | 21999        |
 | Prometheus              | 9090         |
-| Mockserver              | 1080         |
 
 ## Internal Services
 
@@ -133,6 +132,7 @@ docker compose --profile build up
 | Statsd - Stat data     | 9102         |
 | Riot Ingest Service    | 19990        |
 | Match Service          | 19991        |
+| Mockserver             | 1080         |
 
 # Databases
 
