@@ -145,6 +145,15 @@ services:
     networks:
       - valyticsmesh
 
+  mockserver:
+    build:
+      context: ./
+      dockerfile: ./containers/etc/mock-server/Dockerfile
+    profiles:
+      - backend
+    networks:
+      - valyticsmesh
+
 networks:
   valyticsmesh:
     driver: bridge

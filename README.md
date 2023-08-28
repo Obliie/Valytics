@@ -25,6 +25,7 @@
   - [Setup](#setup)
     - [Frontend](#frontend)
     - [Backend](#backend)
+      - [Mockserver](#Mockserver)
   - [Testing](#testing)
   - [Build](#build)
 - [Service Ports](#service-ports)
@@ -89,6 +90,14 @@ cp .env.example .env
 docker compose --profile backend up
 ```
 
+#### Mockserver
+
+After executing the commands specified in backend the mockserver service will be up and running.
+If you want to add in any mock data you have to edit the mockserver-config.json file which
+includes an example.
+
+Match data example: http://mockserver:1080/val/match/v1/matches/7b2412ad-d530-4bec-a112-01b171bb4959
+
 ## Testing
 
 Run service integration tests:
@@ -123,6 +132,7 @@ docker compose --profile build up
 | Statsd - Stat data     | 9102         |
 | Riot Ingest Service    | 19990        |
 | Match Service          | 19991        |
+| Mockserver             | 1080         |
 
 # Databases
 
