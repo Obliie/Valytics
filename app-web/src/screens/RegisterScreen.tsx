@@ -141,7 +141,9 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
         onPress={onDiscordSignUpPressed}
         style={{ marginTop: 24 }}
         icon={require('../../assets/discord-logo.png')}>
-        <Text style={appStyles.buttonText}>Sign Up with Discord</Text>
+        <a href="http://localhost:3000/auth/discord/signup">
+          <Text style={appStyles.buttonText}>Sign Up with Discord</Text>
+        </a>
       </Button>
 
       <Breaker color="grey" height={2} />
