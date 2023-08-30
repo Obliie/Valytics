@@ -28,9 +28,9 @@ from service_common.http_util import request_get
 from service_common.service_logging import init_logging, log_and_flush
 
 
-RIOT_API_URL = "https://api.riotgames.com"
-MATCH_DATA_ENDPOINT = "{RIOT_API_URL}/val/match/v1/matches/{match_id}"
-ACCOUNT_DATA_ENDPOINT = "{RIOT_API_URL}/account/v1/accounts/by-riot-id/{game_name}/{tag_line}}"
+RIOT_API_URL = "http://mockserver:1080"
+MATCH_DATA_ENDPOINT = f"{RIOT_API_URL}/val/match/v1/matches/{{match_id}}"
+ACCOUNT_DATA_ENDPOINT = f"{RIOT_API_URL}/account/v1/accounts/by-riot-id/{{game_name}}/{{tag_line}}"
 MATCH_LIST_DATA_ENDPOINT = "{RIOT_API_URL}/val/match/v1/matchlists/by-puuid/{puu_id}"
 LEADERBOARD_DATA_ENDPOINT = "{RIOT_API_URL}/val/ranked/v1/leaderboards/by-act/{actId})"
 
@@ -50,18 +50,21 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
     ) -> riot_ingest_pb2.GetMatchDataResponse:
         """Fetches match data from Riot Games API and returns the retrieved data."""
         url = MATCH_DATA_ENDPOINT.format(match_id=request.match_id)
-        headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
+        print(url, flush=True)
+        # headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
 
-        match_data = request_get(url, headers, context)
+        # match_data = request_get(url, headers, context)
+        match_data = request_get(url, context)
+
         if match_data:
-            response_message = riot_ingest_pb2.GetMatchDataRequest()
+            response_message = riot_ingest_pb2.GetMatchDataResponse()
             parsed_matched_data = json.dumps(match_data)
             # Can check ids here
-            response_message.match_id = parsed_matched_data["matchInfo"]["matchId"]
+            response_message.match_id = match_data["matchInfo"]["matchId"]
             response_message.response = parsed_matched_data
             return response_message
 
-        return riot_ingest_pb2.GetMatchDataRequest()
+        return riot_ingest_pb2.GetMatchDataResponse()
 
     def GetAccountByRiotID(
         self, request: riot_ingest_pb2.GetAccountByRiotIDRequest, context: grpc.ServicerContext
@@ -69,16 +72,17 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         """Fetches match data from Riot Games API and returns the retrieved data."""
 
         url = ACCOUNT_DATA_ENDPOINT.format(game_name=request.game_name, tag_line=request.tag_line)
-        headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
+        print("HAAHAHA", flush=True)
+        print(url)
+        # headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
+        # account_data = request_get(url, headers, context)
+        account_data = request_get(url, context)
 
-        account_data = request_get(url, headers, context)
         if account_data:
             response_message = riot_ingest_pb2.GetAccountByRiotIDResponse()
-            parsed_account_data = json.dumps(account_data)
-
-            response_message.game_name = parsed_account_data["gameName"]
-            response_message.tag_line = parsed_account_data["tagLine"]
-            response_message.pu_id = parsed_account_data["puuid"]
+            response_message.game_name = account_data["gameName"]
+            response_message.tag_line = account_data["tagLine"]
+            response_message.puu_id = account_data["puuid"]
             return response_message
 
         return riot_ingest_pb2.GetMatchDataResponse()
