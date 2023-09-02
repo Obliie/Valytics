@@ -61,5 +61,32 @@
         "Content-Type": "application/json"
       }
     }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/val/match/v1/matchlists/by-puuid/xya6wbl5uMkzSdFUPWScfJ1VUUY1-Ip1Qz3AKDBIlt7vV0ZpNQNRKunciG0LnpgcQDPhWbJI_tr9bg"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "body": {
+        "puuid": "xya6wbl5uMkzSdFUPWScfJ1VUUY1-Ip1Qz3AKDBIlt7vV0ZpNQNRKunciG0LnpgcQDPhWbJI_tr9bg",
+        "history": [
+          {
+            "matchId": "7b2412ad-d530-4bec-a112-01b171bb4959",
+            "gameStartTimeMillis": 1615310282945,
+            "queueId": "COMPETITIVE"
+          },
+          {
+            "matchId": "7b2412ad-d530-4bec-a112-01b171bb4959",
+            "gameStartTimeMillis": 1615310282945,
+            "queueId": "COMPETITIVE"
+          }
+        ]
+      },
+      "headers": {
+        "Content-Type": "application/json"
+      }
+    }
   }
 ]

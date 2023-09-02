@@ -31,8 +31,9 @@ from service_common.service_logging import init_logging, log_and_flush
 RIOT_API_URL = "http://mockserver:1080"
 MATCH_DATA_ENDPOINT = f"{RIOT_API_URL}/val/match/v1/matches/{{match_id}}"
 ACCOUNT_DATA_ENDPOINT = f"{RIOT_API_URL}/account/v1/accounts/by-riot-id/{{game_name}}/{{tag_line}}"
-MATCH_LIST_DATA_ENDPOINT = "{RIOT_API_URL}/val/match/v1/matchlists/by-puuid/{puu_id}"
-LEADERBOARD_DATA_ENDPOINT = "{RIOT_API_URL}/val/ranked/v1/leaderboards/by-act/{actId})"
+MATCH_LIST_DATA_ENDPOINT = f"{RIOT_API_URL}/val/match/v1/matchlists/by-puuid/{{puu_id}}"
+
+LEADERBOARD_DATA_ENDPOINT = f"{RIOT_API_URL}/val/ranked/v1/leaderboards/by-act/{{actId}})"
 
 
 class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
@@ -93,24 +94,24 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         """Fetches match data from Riot Games API and returns the retrieved data."""
 
         url = MATCH_LIST_DATA_ENDPOINT.format(puu_id=request.puu_id)
-        headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
+        # headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
 
-        match_data = request_get(url, headers, context)
+        # match_data = request_get(url, headers, context)
+        match_data = request_get(url, context)
+
         if match_data:
             response_message = riot_ingest_pb2.GetPlayerMatchesResponse()
-
             matches = []
-            parsed_match_data = json.dumps(match_data)
-            match_list = parsed_match_data["history"]
+            match_list = match_data["history"]
 
             for match in match_list:
-                match = riot_ingest_pb2.PlayersMatches
-                match.match_id = match_list["matchId"]
-                match.game_start_time = match_list["gameStartTimeMillis"]
-                match.queue_id = match_list["queueId"]
-                matches.append(match)
+                match_proto = riot_ingest_pb2.PlayersMatches()
+                match_proto.match_id = match["matchId"]
+                match_proto.game_start_time = str(match["gameStartTimeMillis"])
+                match_proto.queue_id = match["queueId"]
+                matches.append(match_proto)
 
-            response_message.puu_id = parsed_match_data["puuid"]
+            response_message.puu_id = match_data["puuid"]
             response_message.history.extend(matches)
             return response_message
 
@@ -119,7 +120,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
     def GetContentData(self, context: grpc.ServicerContext) -> riot_ingest_pb2.GetContentDataResponse:
         """Fetches match data from Riot Games API and returns the retrieved data."""
 
-        url = MATCH_DATA_ENDPOINT  ##
+        url = MATCH_DATA_ENDPOINT
         headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
 
         context_data = request_get(url, headers, context)
