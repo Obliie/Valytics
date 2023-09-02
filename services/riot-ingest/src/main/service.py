@@ -32,7 +32,7 @@ RIOT_API_URL = "http://mockserver:1080"
 MATCH_DATA_ENDPOINT = f"{RIOT_API_URL}/val/match/v1/matches/{{match_id}}"
 ACCOUNT_DATA_ENDPOINT = f"{RIOT_API_URL}/account/v1/accounts/by-riot-id/{{game_name}}/{{tag_line}}"
 MATCH_LIST_DATA_ENDPOINT = f"{RIOT_API_URL}/val/match/v1/matchlists/by-puuid/{{puu_id}}"
-
+CONTENT_DATA_ENDPOINT = f"{RIOT_API_URL}/val/content/v1/contents"
 LEADERBOARD_DATA_ENDPOINT = f"{RIOT_API_URL}/val/ranked/v1/leaderboards/by-act/{{actId}})"
 
 
@@ -73,8 +73,6 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         """Fetches match data from Riot Games API and returns the retrieved data."""
 
         url = ACCOUNT_DATA_ENDPOINT.format(game_name=request.game_name, tag_line=request.tag_line)
-        print("HAAHAHA", flush=True)
-        print(url)
         # headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
         # account_data = request_get(url, headers, context)
         account_data = request_get(url, context)
@@ -117,20 +115,23 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
 
         return riot_ingest_pb2.GetPlayerMatchesResponse()
 
-    def GetContentData(self, context: grpc.ServicerContext) -> riot_ingest_pb2.GetContentDataResponse:
+    def GetContentData(
+        self, request: riot_ingest_pb2.GetContentDataRequest, context: grpc.ServicerContext
+    ) -> riot_ingest_pb2.GetContentDataResponse:
         """Fetches match data from Riot Games API and returns the retrieved data."""
 
-        url = MATCH_DATA_ENDPOINT
-        headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
+        url = CONTENT_DATA_ENDPOINT
+        # headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
 
-        context_data = request_get(url, headers, context)
+        # context_data = request_get(url, headers, context)
+        context_data = request_get(url, context)
+
         if context_data:
             response_message = riot_ingest_pb2.GetContentDataResponse()
-            parsed_account_data = json.dumps(context_data)
-            response_message.response = parsed_account_data
+            response_message.response = str(context_data)
             return response_message
 
-        return riot_ingest_pb2.GetMatchDataResponse()
+        return riot_ingest_pb2.GetContentDataResponse()
 
     def GetLeaderboardData(
         self, request: riot_ingest_pb2.GetLeaderboardDataRequest, context: grpc.ServicerContext

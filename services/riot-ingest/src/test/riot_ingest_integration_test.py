@@ -46,3 +46,16 @@ def test_get_player_matches() -> None:
         assert match.match_id == "7b2412ad-d530-4bec-a112-01b171bb4959"
         assert match.game_start_time == "1615310282945"
         assert match.queue_id == "COMPETITIVE"
+
+
+channel_opt = [
+    ("grpc.max_send_message_length", 512 * 1024 * 1024),
+    ("grpc.max_receive_message_length", 512 * 1024 * 1024),
+]
+
+
+def test_get_content_data() -> None:
+    with grpc.insecure_channel(f"riot-ingest:{os.environ['RIOT_INGEST_SERVICE_PORT']}", options=channel_opt) as channel:
+        stub = riot_ingest_pb2_grpc.RiotIngestServiceStub(channel)
+
+        response = stub.GetContentData(riot_ingest_pb2.GetContentDataRequest())
