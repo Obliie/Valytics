@@ -26,6 +26,7 @@ import grpc
 from protobufs.services import riot_ingest_pb2, riot_ingest_pb2_grpc
 from service_common.http_util import request_get
 from service_common.service_logging import init_logging, log_and_flush
+from google.protobuf.descriptor import EnumDescriptor
 
 
 RIOT_API_URL = "http://mockserver:1080"
@@ -33,7 +34,7 @@ MATCH_DATA_ENDPOINT = f"{RIOT_API_URL}/val/match/v1/matches/{{match_id}}"
 ACCOUNT_DATA_ENDPOINT = f"{RIOT_API_URL}/account/v1/accounts/by-riot-id/{{game_name}}/{{tag_line}}"
 MATCH_LIST_DATA_ENDPOINT = f"{RIOT_API_URL}/val/match/v1/matchlists/by-puuid/{{puu_id}}"
 CONTENT_DATA_ENDPOINT = f"{RIOT_API_URL}/val/content/v1/contents"
-LEADERBOARD_DATA_ENDPOINT = f"{RIOT_API_URL}/val/ranked/v1/leaderboards/by-act/{{actId}})"
+LEADERBOARD_DATA_ENDPOINT = f"{RIOT_API_URL}/val/ranked/v1/leaderboards/by-act/{{act_id}}"
 
 
 class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
@@ -138,18 +139,50 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
     ) -> riot_ingest_pb2.GetLeaderboardDataResponse:
         """Fetches match data from Riot Games API and returns the retrieved data."""
 
-        url = LEADERBOARD_DATA_ENDPOINT.format(puu_id=request.act_id)
-        headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
+        # Create a mapping between enum field names and their integer values
+        enum_mapping = {
+            0: "CLOSED_BETA_ACT_1",
+            1: "CLOSED_BETA_ACT_2",
+            2: "CLOSED_BETA_ACT_3",
+            3: "EPISODE_1_ACT_1",
+            4: "EPISODE_1_ACT_2",
+            5: "EPISODE_1_ACT_3",
+            6: "EPISODE_2_ACT_1",
+            7: "EPISODE_2_ACT_2",
+            8: "EPISODE_2_ACT_3",
+            9: "EPISODE_3_ACT_1",
+            10: "EPISODE_3_ACT_2",
+            11: "EPISODE_3_ACT_3",
+            12: "EPISODE_4_ACT_1",
+            13: "EPISODE_4_ACT_2",
+            14: "EPISODE_4_ACT_3",
+            15: "EPISODE_5_ACT_1",
+            16: "EPISODE_5_ACT_2",
+            17: "EPISODE_5_ACT_3",
+            18: "EPISODE_6_ACT_1",
+            19: "EPISODE_6_ACT_2",
+            20: "EPISODE_6_ACT_3",
+            21: "EPISODE_7_ACT_1",
+        }
 
-        leaderboard_data = request_get(url, headers, context)
+        # In your GetLeaderboardData function, use the mapping to get the integer value from the field name
+
+        url = LEADERBOARD_DATA_ENDPOINT.format(act_id=enum_mapping.get(request.act_id))
+        # headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
+        # leaderboard_data = request_get(url, headers, context)
+
+        leaderboard_data = request_get(url, context)
+        response_message = riot_ingest_pb2.GetLeaderboardDataResponse()
+        return response_message
+
         if leaderboard_data:
             response_message = riot_ingest_pb2.GetLeaderboardDataResponse()
             player_data = []
-            parsed_leaderboard_data = json.dumps(leaderboard_data)
+            parsed_leaderboard_data = leaderboard_data
             players_list = parsed_leaderboard_data["players"]
 
             for player in players_list:
-                player = riot_ingest_pb2.PlayerDto
+                player = riot_ingest_pb2.PlayerDto()
                 player.puu_id = players_list["puuid"]
                 player.game_name = players_list["gameName"]
                 player.tag_line = players_list["tagLine"]

@@ -59,3 +59,9 @@ def test_get_content_data() -> None:
         stub = riot_ingest_pb2_grpc.RiotIngestServiceStub(channel)
 
         response = stub.GetContentData(riot_ingest_pb2.GetContentDataRequest())
+
+
+def test_get_leaderboard_data() -> None:
+    with grpc.insecure_channel(f"riot-ingest:{ os.environ['RIOT_INGEST_SERVICE_PORT' ]}") as channel:
+        stub = riot_ingest_pb2_grpc.RiotIngestServiceStub(channel)
+        response = stub.GetLeaderboardData(riot_ingest_pb2.GetLeaderboardDataRequest(act_id=3))
