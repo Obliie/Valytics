@@ -172,8 +172,6 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         # leaderboard_data = request_get(url, headers, context)
 
         leaderboard_data = request_get(url, context)
-        response_message = riot_ingest_pb2.GetLeaderboardDataResponse()
-        return response_message
 
         if leaderboard_data:
             response_message = riot_ingest_pb2.GetLeaderboardDataResponse()
@@ -182,19 +180,19 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
             players_list = parsed_leaderboard_data["players"]
 
             for player in players_list:
-                player = riot_ingest_pb2.PlayerDto()
-                player.puu_id = players_list["puuid"]
-                player.game_name = players_list["gameName"]
-                player.tag_line = players_list["tagLine"]
-                player.leaderboard_rank = players_list["leaderboardRank"]
-                player.ranked_rating = players_list["rankedRating"]
-                player.number_of_wins = players_list["numberOfWins"]
-                player_data.append(player)
+                player_proto = riot_ingest_pb2.PlayerDto()
+                player_proto.puu_id = player["puuid"]
+                player_proto.game_name = player["gameName"]
+                player_proto.tag_line = player["tagLine"]
+                player_proto.leaderboard_rank = player["leaderboardRank"]
+                player_proto.ranked_rating = player["rankedRating"]
+                player_proto.number_of_wins = player["numberOfWins"]
+                player_data.append(player_proto)
 
+            response_message.players.extend(player_data)
             response_message.act_id = parsed_leaderboard_data["actId"]
             response_message.shard = parsed_leaderboard_data["shard"]
             response_message.total_players = parsed_leaderboard_data["totalPlayers"]
-            response_message.players.extend(player_data)
             return response_message
 
         return riot_ingest_pb2.GetPlayerMatchesResponse()

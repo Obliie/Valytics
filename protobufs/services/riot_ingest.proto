@@ -112,10 +112,10 @@ enum ActId {
 enum shard {
     NA = 0;
     LATAM = 1;
-    br = 2;
-    eu = 3;
-    ap = 4;
-    kr = 5;
+    BR = 2;
+    EU = 3;
+    AP = 4;
+    KR = 5;
 }
 
 message GetLeaderboardDataRequest {
