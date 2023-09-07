@@ -139,35 +139,8 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
     ) -> riot_ingest_pb2.GetLeaderboardDataResponse:
         """Fetches match data from Riot Games API and returns the retrieved data."""
 
-        # Create a mapping between enum field names and their integer values
-        enum_mapping = {
-            0: "CLOSED_BETA_ACT_1",
-            1: "CLOSED_BETA_ACT_2",
-            2: "CLOSED_BETA_ACT_3",
-            3: "EPISODE_1_ACT_1",
-            4: "EPISODE_1_ACT_2",
-            5: "EPISODE_1_ACT_3",
-            6: "EPISODE_2_ACT_1",
-            7: "EPISODE_2_ACT_2",
-            8: "EPISODE_2_ACT_3",
-            9: "EPISODE_3_ACT_1",
-            10: "EPISODE_3_ACT_2",
-            11: "EPISODE_3_ACT_3",
-            12: "EPISODE_4_ACT_1",
-            13: "EPISODE_4_ACT_2",
-            14: "EPISODE_4_ACT_3",
-            15: "EPISODE_5_ACT_1",
-            16: "EPISODE_5_ACT_2",
-            17: "EPISODE_5_ACT_3",
-            18: "EPISODE_6_ACT_1",
-            19: "EPISODE_6_ACT_2",
-            20: "EPISODE_6_ACT_3",
-            21: "EPISODE_7_ACT_1",
-        }
+        url = LEADERBOARD_DATA_ENDPOINT.format(act_id=(riot_ingest_pb2.ActId.Name(request.act_id)))
 
-        # In your GetLeaderboardData function, use the mapping to get the integer value from the field name
-
-        url = LEADERBOARD_DATA_ENDPOINT.format(act_id=enum_mapping.get(request.act_id))
         # headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
         # leaderboard_data = request_get(url, headers, context)
 
