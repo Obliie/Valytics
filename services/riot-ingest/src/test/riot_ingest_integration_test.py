@@ -74,3 +74,9 @@ def test_get_leaderboard_data() -> None:
         stub = riot_ingest_pb2_grpc.RiotIngestServiceStub(channel)
         response = stub.GetLeaderboardData(riot_ingest_pb2.GetLeaderboardDataRequest(act_id=my_act_id))
         assert riot_ingest_pb2.ActId.Name(response.act_id) == my_act_id
+        assert riot_ingest_pb2.shard.Name(response.shard) == "LATAM"
+
+        assert response.total_players == 312
+        assert response.players[0].game_name == "hahas das"
+        assert response.players[1].ranked_rating == 3132
+        assert response.players[2].number_of_wins == 1
