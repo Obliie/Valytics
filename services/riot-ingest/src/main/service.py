@@ -148,10 +148,9 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
             response.chinese_traditional = character["zh-TW"]
             return response
 
-        if context_data:
-            response_message = riot_ingest_pb2.GetContentDataResponse()
+        def populate_proto_response(list):
             characters = []
-            character_list = context_data["characters"]
+            character_list = context_data[list]
 
             for character in character_list:
                 character_proto = riot_ingest_pb2.GameInformation()
@@ -159,11 +158,33 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
                 character_proto.name = character["name"]
                 character_proto.player_id = character["id"]
                 character_proto.asset_name = character["assetName"]
-                print(character_proto.asset_name, flush=True)
                 character_proto.localized_names.CopyFrom(response_languages)
                 characters.append(character_proto)
 
+            return characters
+
+        if context_data:
+            response_message = riot_ingest_pb2.GetContentDataResponse()
+            characters = populate_proto_response("characters")
             response_message.character_info.extend(characters)
+
+            maps = populate_proto_response("maps")
+            chromas = populate_proto_response("chromas")
+            skins = populate_proto_response("skins")
+            skinLevels = populate_proto_response("skinLevels")
+            equips = populate_proto_response("equips")
+
+            gameModes = populate_proto_response("gameModes")  # DIFFERENT
+            sprays = populate_proto_response("sprays")
+            sprayLevels = populate_proto_response("sprayLevels")
+            charms = populate_proto_response("charms")
+            charmLevels = populate_proto_response("charmLevels")
+            playerCards = populate_proto_response("playerCards")
+            ceremonies = populate_proto_response("ceremonies")
+
+            playerTitles = populate_proto_response("playerTitles")
+            # acts = populate_proto_response("acts")  # DIFFERENT
+
             return response_message
 
         return riot_ingest_pb2.GetContentDataResponse()
