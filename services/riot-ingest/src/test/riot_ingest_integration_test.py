@@ -61,13 +61,6 @@ channel_opt = [
 ]
 
 
-def test_get_content_data() -> None:
-    with grpc.insecure_channel(f"riot-ingest:{os.environ['RIOT_INGEST_SERVICE_PORT']}", options=channel_opt) as channel:
-        stub = riot_ingest_pb2_grpc.RiotIngestServiceStub(channel)
-
-        response = stub.GetContentData(riot_ingest_pb2.GetContentDataRequest())
-
-
 def test_get_leaderboard_data() -> None:
     my_act_id = "EPISODE_1_ACT_1"
     with grpc.insecure_channel(f"riot-ingest:{ os.environ['RIOT_INGEST_SERVICE_PORT' ]}") as channel:
@@ -80,3 +73,14 @@ def test_get_leaderboard_data() -> None:
         assert response.players[0].game_name == "hahas das"
         assert response.players[1].ranked_rating == 3132
         assert response.players[2].number_of_wins == 1
+
+
+def test_get_content_data() -> None:
+    with grpc.insecure_channel(f"riot-ingest:{os.environ['RIOT_INGEST_SERVICE_PORT']}", options=channel_opt) as channel:
+        stub = riot_ingest_pb2_grpc.RiotIngestServiceStub(channel)
+
+        response = stub.GetContentData(riot_ingest_pb2.GetContentDataRequest())
+        assert response.character_info[1].localized_names.turkish == "FADE"
+        assert response.character_info[0].player_id == "E370FA57-4757-3604-3648-499E1F642D3F"
+        assert response.character_info[2].asset_name == "Default__Breach_PrimaryAsset_C"
+        assert response.character_info[3].name == "Deadlock"

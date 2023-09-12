@@ -76,8 +76,51 @@ message GetPlayerMatchesResponse {
 
 message GetContentDataRequest {}
 
+message Languages {
+    string arabic = 1;
+    string german = 2;
+    string english = 3;
+    string spanish_spain = 4;
+    string spanish_mexico = 5;
+    string french = 6;
+    string indonesian = 7;
+    string italian = 8;
+    string japanese = 9;
+    string korean = 10;
+    string polish = 11;
+    string portuguese_brazil = 12;
+    string russian = 13;
+    string thai = 14;
+    string turkish = 15;
+    string vietnamese = 16;
+    string chinese_simplified = 17;
+    string chinese_traditional = 18;
+  }
+
+message GameInformation{
+    string name = 1;
+    Languages localized_names  = 2;
+    string player_id = 3;
+    string asset_name = 4;
+}
+
 message GetContentDataResponse {
-    string response = 1;
+    repeated GameInformation character_info = 1;
+    repeated GameInformation map_info = 2;
+    repeated GameInformation chromas_info = 3;
+    repeated GameInformation skin_info = 4;
+    repeated GameInformation skin_level_info = 5;
+    repeated GameInformation equips_info = 6;
+    repeated GameInformation game_modes_info = 7;
+    repeated GameInformation sprays_info = 8;
+    repeated GameInformation spray_level_info = 9;
+    repeated GameInformation charms_info = 10;
+    repeated GameInformation charm_level_info = 11;
+    repeated GameInformation player_cards_info = 12;
+    repeated GameInformation player_titles_info = 13;
+    repeated GameInformation acts_info = 14;
+    repeated GameInformation ceremonies_info = 15;
+    string version = 16;
 }
 
 /*

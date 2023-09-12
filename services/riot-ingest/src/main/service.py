@@ -26,7 +26,6 @@ import grpc
 from protobufs.services import riot_ingest_pb2, riot_ingest_pb2_grpc
 from service_common.http_util import request_get
 from service_common.service_logging import init_logging, log_and_flush
-from google.protobuf.descriptor import EnumDescriptor
 
 
 RIOT_API_URL = "http://mockserver:1080"
@@ -127,9 +126,44 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         # context_data = request_get(url, headers, context)
         context_data = request_get(url, context)
 
+        def set_lang(character, response):
+            response = riot_ingest_pb2.Languages()
+            response.arabic = character["ar-AE"]
+            response.german = character["de-DE"]
+            response.english = character["en-US"]
+            response.spanish_spain = character["es-ES"]
+            response.spanish_mexico = character["es-MX"]
+            response.french = character["fr-FR"]
+            response.indonesian = character["id-ID"]
+            response.italian = character["it-IT"]
+            response.japanese = character["ja-JP"]
+            response.korean = character["ko-KR"]
+            response.polish = character["pl-PL"]
+            response.portuguese_brazil = character["pt-BR"]
+            response.russian = character["ru-RU"]
+            response.thai = character["th-TH"]
+            response.turkish = character["tr-TR"]
+            response.vietnamese = character["vi-VN"]
+            response.chinese_simplified = character["zh-CN"]
+            response.chinese_traditional = character["zh-TW"]
+            return response
+
         if context_data:
             response_message = riot_ingest_pb2.GetContentDataResponse()
-            response_message.response = str(context_data)
+            characters = []
+            character_list = context_data["characters"]
+
+            for character in character_list:
+                character_proto = riot_ingest_pb2.GameInformation()
+                response_languages = set_lang(character["localizedNames"], response=riot_ingest_pb2.Languages())
+                character_proto.name = character["name"]
+                character_proto.player_id = character["id"]
+                character_proto.asset_name = character["assetName"]
+                print(character_proto.asset_name, flush=True)
+                character_proto.localized_names.CopyFrom(response_languages)
+                characters.append(character_proto)
+
+            response_message.character_info.extend(characters)
             return response_message
 
         return riot_ingest_pb2.GetContentDataResponse()
@@ -149,8 +183,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         if leaderboard_data:
             response_message = riot_ingest_pb2.GetLeaderboardDataResponse()
             player_data = []
-            parsed_leaderboard_data = leaderboard_data
-            players_list = parsed_leaderboard_data["players"]
+            players_list = leaderboard_data["players"]
 
             for player in players_list:
                 player_proto = riot_ingest_pb2.PlayerDto()
@@ -163,9 +196,9 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
                 player_data.append(player_proto)
 
             response_message.players.extend(player_data)
-            response_message.act_id = parsed_leaderboard_data["actId"]
-            response_message.shard = parsed_leaderboard_data["shard"]
-            response_message.total_players = parsed_leaderboard_data["totalPlayers"]
+            response_message.act_id = leaderboard_data["actId"]
+            response_message.shard = leaderboard_data["shard"]
+            response_message.total_players = leaderboard_data["totalPlayers"]
             return response_message
 
         return riot_ingest_pb2.GetPlayerMatchesResponse()
