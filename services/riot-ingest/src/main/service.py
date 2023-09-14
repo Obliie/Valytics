@@ -128,6 +128,33 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
 
         def set_lang(character, response):
             response = riot_ingest_pb2.Languages()
+
+            print(character["ar-AE"], flush=True)
+            print(character["de-DE"], flush=True)
+
+            print(character["en-US"], flush=True)
+            print(character["es-ES"], flush=True)
+            print(character["es-MX"], flush=True)
+            print(character["fr-FR"], flush=True)
+            print(character["id-ID"], flush=True)
+            print(character["it-IT"], flush=True)
+            print(character["ja-JP"], flush=True)
+            print(character["ko-KR"], flush=True)
+            print(character["pl-PL"], flush=True)
+            print(character["pt-BR"], flush=True)
+            print(character["ru-RU"], flush=True)
+            print(character["th-TH"], flush=True)
+            print(character["tr-TR"], flush=True)
+            print(character["tr-TR"], flush=True)
+            print(character["vi-VN"], flush=True)
+
+            print(character["zh-CN"], flush=True)
+            print(character["zh-TW"], flush=True)
+            print("HAHAHAAH", flush=True)
+            print("HAHAHAAH", flush=True)
+            print("HAHAHAAH", flush=True)
+            print("HAHAHAAH", flush=True)
+            print("HAHAHAAH", flush=True)
             response.arabic = character["ar-AE"]
             response.german = character["de-DE"]
             response.english = character["en-US"]
