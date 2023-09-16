@@ -106,7 +106,7 @@ message DamageInformation{
     uint64 head_shots = 5;
 
 }
-message PlayerRoundsStatsInformation{
+message PlayerRoundStatsInformation{
     string puu_id = 1;
     repeated KillsInformation kills = 2;
     repeated DamageInformation damage = 3;
@@ -128,7 +128,7 @@ message RoundsInformation{
     uint64 defuse_round_time = 11;
     repeated PlayerLocations defuse_player_locations = 12;
     LocationInformation defuse_location = 13;
-    repeated PlayerRoundsStatsInformation player_stats = 14;
+    repeated PlayerRoundStatsInformation player_stats = 14;
     string round_result_code = 15;
 }
 message GetMatchDataResponse {
