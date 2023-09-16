@@ -80,7 +80,17 @@ def test_get_content_data() -> None:
         stub = riot_ingest_pb2_grpc.RiotIngestServiceStub(channel)
 
         response = stub.GetContentData(riot_ingest_pb2.GetContentDataRequest())
-        assert response.character_info[1].localized_names.turkish == "FADE"
-        assert response.character_info[0].player_id == "E370FA57-4757-3604-3648-499E1F642D3F"
-        assert response.character_info[2].asset_name == "Default__Breach_PrimaryAsset_C"
-        assert response.character_info[3].name == "Deadlock"
+        print((response.characters_info[0].player_id), flush=True)
+        print("hahaaa", flush=True)
+
+        assert response.characters_info[1].localized_names.turkish == "FADE"
+        assert response.characters_info[0].player_id == "E370FA57-4757-3604-3648-499E1F642D3F"
+        assert response.characters_info[2].asset_name == "Default__Breach_PrimaryAsset_C"
+        assert response.characters_info[3].name == "Deadlock"
+
+        assert response.characters_info[4].name == "Raze"
+
+        assert response.game_modes_info[0].asset_path == "/Game/GameModes/Bomb/BombGameMode.BombGameMode_C"
+        assert response.game_modes_info[1].asset_name == "DeathmatchGameMode"
+
+        assert response.acts_info[1].parent_id == "fcf2c8f4-4324-e50b-2e23-718e4a3ab046"

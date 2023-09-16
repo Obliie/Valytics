@@ -104,21 +104,38 @@ message GameInformation{
     string asset_name = 4;
 }
 
+message GameModesInformation{
+    string name = 1;
+    Languages localized_names  = 2;
+    string player_id = 3;
+    string asset_name = 4;
+    string asset_path = 5;
+}
+
+message ActsInformation{
+    string player_id = 1;
+    string parent_id = 2;
+    string type = 3;
+    string name = 4;
+    Languages localized_names  = 5;
+    string isActive = 6;
+}
+
 message GetContentDataResponse {
-    repeated GameInformation character_info = 1;
-    repeated GameInformation map_info = 2;
+    repeated GameInformation characters_info = 1;
+    repeated GameInformation maps_info = 2;
     repeated GameInformation chromas_info = 3;
-    repeated GameInformation skin_info = 4;
-    repeated GameInformation skin_level_info = 5;
+    repeated GameInformation skins_info = 4;
+    repeated GameInformation skin_levels_info = 5;
     repeated GameInformation equips_info = 6;
-    repeated GameInformation game_modes_info = 7;
+    repeated GameModesInformation game_modes_info = 7;
     repeated GameInformation sprays_info = 8;
-    repeated GameInformation spray_level_info = 9;
+    repeated GameInformation spray_levels_info = 9;
     repeated GameInformation charms_info = 10;
-    repeated GameInformation charm_level_info = 11;
+    repeated GameInformation charm_levels_info = 11;
     repeated GameInformation player_cards_info = 12;
     repeated GameInformation player_titles_info = 13;
-    repeated GameInformation acts_info = 14;
+    repeated ActsInformation acts_info = 14;
     repeated GameInformation ceremonies_info = 15;
     string version = 16;
 }
