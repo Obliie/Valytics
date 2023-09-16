@@ -6,8 +6,7 @@ package services;
  * This service provides various RPC methods to retrieve data related to Riot Games.
 */
 service RiotIngestService {
-    // Used to retrieve data related to a specific match (game).
-    rpc GetMatchData(GetMatchDataRequest) returns (GetMatchDataResponse) {}
+
 
     // Used to get puuid data based on a game name and tagline.
     rpc GetAccountByRiotID(GetAccountByRiotIDRequest) returns (GetAccountByRiotIDResponse) {}
@@ -22,18 +21,7 @@ service RiotIngestService {
     rpc GetLeaderboardData(GetLeaderboardDataRequest) returns (GetLeaderboardDataResponse) {}
 }
 
-/*
- * VAL-MATCH-V1 (/val/match/v1/matches/{matchId})
- * Uses matchId to retrieve match data e.g. puuid's, kill's, deaths, assists etc.
-*/
-message GetMatchDataRequest {
-    string match_id = 1;
-}
 
-message GetMatchDataResponse {
-    string match_id = 1;
-    string response = 2;
-}
 
 /*
  * ACCOUNT-V1 (/riot/account/v1/accounts/by-riot-id/{gameName}/{tagLine})
