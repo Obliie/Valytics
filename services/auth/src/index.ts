@@ -21,6 +21,15 @@ const handleDiscordOAuth = async (
   try {
     console.log(`${endpoint} ENDPOINT`);
     console.log(req.query);
+
+    if (req.query.error) {
+      // User canceled authorization
+      console.log('User canceled authorization');
+      // You can display a message or take other actions here
+      return res.status(400).send('Authorization cancelled by the user');
+    }
+
+    // If there is no error parameter, continue with the OAuth flow
     const code = req.query.code as string;
     const params = new URLSearchParams({
       client_id: process.env.DISCORD_CLIENT_ID!,
@@ -45,7 +54,7 @@ const handleDiscordOAuth = async (
     });
 
     // Get user details
-    const { id, username, avatar } = userResponse.data;
+    const { id, username, email } = userResponse.data;
 
     // TODO: Handle additional logic based on the endpoint
     if (endpoint === 'LOGIN') {
@@ -97,7 +106,7 @@ app.get('/auth/discord/signup/callback', async (req, res) => {
 
 console.log(process.env.HOST);
 
-const PORT = process.env.NODE_PORT || 3000;
+const PORT = process.env.NODE_PORT ?? 3000;
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
