@@ -129,3 +129,4 @@ docker compose --profile build up
 | Service                 | Default Port |
 | ----------------------- | ------------ |
 | Match - Ranked Match DB | 27001        |
+| Auth - Auth DB          | 27002        |
