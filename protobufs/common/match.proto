@@ -1,0 +1,121 @@
+syntax = "proto3";
+
+package common;
+
+
+
+
+message MatchInformation{
+    string match_id = 1;
+    string map_id  = 2;
+    uint64 game_length = 3;
+    uint64 game_start = 4;
+    string prov_flow_id = 5;
+    bool is_completed = 6;
+    string custom_name = 7;
+    string queue_id = 8;
+    string game_mode = 9;
+    bool is_ranked = 10;
+    string season_id = 11;
+}
+
+message PlayerStats{
+    uint64 score = 1;
+    uint64 roundsPlayed = 2;
+    uint64 kills = 3;
+    uint64 deaths = 4;
+    uint64 assists = 5;
+    uint64 playtimeMillis = 6;
+}
+
+message PlayerInformation {
+    string puu_id = 1;
+    string game_name = 2;
+    string tag_line = 3;
+    string team_id = 4;
+    string party_id = 5;
+    string character_id = 6;
+    PlayerStats stats = 7;
+    uint64 competitive_tier = 8;
+    string player_card = 9;
+    string player_title = 10;
+}
+
+message TeamsInformation {
+    string team_id = 1;
+    bool won = 2;
+    uint64 rounds_played = 3;
+    uint64 rounds_won = 4;
+    uint64 num_points = 5;
+}
+
+message LocationInformation{
+    uint64 x = 1;
+    uint64 y = 2;
+
+}
+message PlayerLocations{
+    string puu_id = 1;
+    double view_radians = 2;  // Changed to double
+    LocationInformation location = 3;   
+}
+
+message FinishingDamageInformation{
+    string damage_type = 1;
+    string damage_item = 2;
+    bool is_secondary_fire_mode = 3;  // Changed to bool
+}
+
+message KillsInformation{
+    uint64 game_start = 1;  // Changed to uint64
+    uint64 round_start = 2;  // Changed to uint64
+    string killer = 3;  // PUUID
+    string victim = 4;  // PUUID
+    LocationInformation victim_location = 5;
+    repeated string assistants = 6;  // List of PUUIDs
+    repeated LocationInformation player_locations = 7;
+    FinishingDamageInformation finishing_damage = 8;
+
+}
+
+message EconomyInformation {
+    uint64 loadout_value = 1; // Changed to uint64
+    string weapon = 2;
+    string armor = 3;
+    uint64 remaining = 4; // Changed to uint64
+    uint64 spent = 5; // Changed to uint64
+}
+
+message DamageInformation{
+    string receiver = 1;  // PUUID
+    uint64 damage = 2;
+    uint64 leg_shots = 3;
+    uint64 body_shots = 4;
+    uint64 head_shots = 5;
+
+}
+message PlayerRoundStatsInformation{
+    string puu_id = 1;
+    repeated KillsInformation kills = 2;
+    repeated DamageInformation damage = 3;
+    uint64 score = 4;  // Changed to uint64
+    EconomyInformation economy = 5;
+
+}
+message RoundsInformation{
+    uint64 round_num = 1;
+    string round_result = 2;
+    string round_ceremony = 3;
+    string winning_team = 4;
+    string bomb_planter = 5;
+    string bomb_defuser = 6;
+    uint64 plant_round_time = 7;
+    repeated PlayerLocations plant_player_locations = 8;
+    LocationInformation plant_location = 9;
+    string plant_site = 10;
+    uint64 defuse_round_time = 11;
+    repeated PlayerLocations defuse_player_locations = 12;
+    LocationInformation defuse_location = 13;
+    repeated PlayerRoundStatsInformation player_stats = 14;
+    string round_result_code = 15;
+}

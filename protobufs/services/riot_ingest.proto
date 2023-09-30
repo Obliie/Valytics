@@ -1,5 +1,6 @@
 syntax = "proto3";
 package services;
+import "common/match.proto";
 
 /*
  * Riot Ingest service
@@ -7,6 +8,7 @@ package services;
 */
 service RiotIngestService {
 
+    rpc GetMatchData(GetMatchDataRequest) returns (GetMatchDataResponse) {}
 
     // Used to get puuid data based on a game name and tagline.
     rpc GetAccountByRiotID(GetAccountByRiotIDRequest) returns (GetAccountByRiotIDResponse) {}
@@ -182,4 +184,15 @@ message GetLeaderboardDataResponse {
     shard shard = 2;
     uint64 total_players = 3;
     repeated PlayerDto players = 4;
+}
+
+message GetMatchDataRequest {
+    string match_id = 1;
+}
+
+message GetMatchDataResponse {
+    common.MatchInformation matches_info = 1;
+    repeated common.PlayerInformation players_info = 2;
+    repeated common.TeamsInformation teams_info = 3; 
+    repeated common.RoundsInformation rounds_info = 4;
 }
