@@ -24,6 +24,8 @@ import os
 
 import grpc
 from protobufs.services import riot_ingest_pb2, riot_ingest_pb2_grpc
+from protobufs.common import match_pb2, match_pb2_grpc
+
 from service_common.http_util import request_get
 from service_common.service_logging import init_logging, log_and_flush
 
@@ -52,17 +54,42 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         """Fetches match data from Riot Games API and returns the retrieved data."""
         url = MATCH_DATA_ENDPOINT.format(match_id=request.match_id)
         print(url, flush=True)
+
         # headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
 
         # match_data = request_get(url, headers, context)
         match_data = request_get(url, context)
 
+        def populate_match_info():
+            match_info_list = match_data["matchInfo"]
+            match_info_proto = match_pb2.MatchInformation()
+            match_info_proto.match_id = match_info_list["matchId"]
+            match_info_proto.map_id = match_info_list["mapId"]
+            match_info_proto.game_length = match_info_list["gameLengthMillis"]
+            match_info_proto.game_start = match_info_list["gameStartMillis"]
+            match_info_proto.prov_flow_id = match_info_list["provisioningFlowId"]
+            match_info_proto.is_completed = match_info_list["isCompleted"]
+            match_info_proto.custom_name = match_info_list["customGameName"]
+            match_info_proto.queue_id = match_info_list["queueId"]
+            match_info_proto.game_mode = match_info_list["gameMode"]
+            match_info_proto.is_ranked = match_info_list["isRanked"]
+            match_info_proto.season_id = match_info_list["seasonId"]
+            return match_info_proto
+
         if match_data:
             response_message = riot_ingest_pb2.GetMatchDataResponse()
-            parsed_matched_data = json.dumps(match_data)
-            # Can check ids here
-            response_message.match_id = match_data["matchInfo"]["matchId"]
-            response_message.response = parsed_matched_data
+            match_info_proto = populate_match_info()
+            response_message.matches_info.CopyFrom(match_info_proto)
+
+            players = []
+            players_list = match_data["players"]
+
+            for player in players_list:
+                player_proto = match_pb2.PlayerInformation()
+                player_proto.puu_id = player["puuid"]
+                players.append(player_proto)
+
+            response_message.players_info.extend(players)
             return response_message
 
         return riot_ingest_pb2.GetMatchDataResponse()

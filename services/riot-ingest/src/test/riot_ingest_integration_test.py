@@ -17,9 +17,8 @@ def test_get_match_data() -> None:
         response = stub.GetMatchData(
             riot_ingest_pb2.GetMatchDataRequest(match_id="7b2412ad-d530-4bec-a112-01b171bb4959")
         )
+    assert response.matches_info.match_id == "7b2412ad-d530-4bec-a112-01b171bb4959"
     # Define the path to the directory you want to list files from
-
-    assert response.match_id == "7b2412ad-d530-4bec-a112-01b171bb4959"
 
 
 def test_get_account_by_riot_ID() -> None:
