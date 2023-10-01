@@ -2,10 +2,14 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import express from 'express';
 import path from 'path';
+import User from './User';
+import db from './db';
 
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 const app = express();
+
+const userCollection = db.useDb('auth').collection('users');
 
 app.get('/', (_req, res) => {
   res.send('Hello, TypeScript with Express!');
@@ -61,6 +65,21 @@ const handleDiscordOAuth = async (
       console.log('User logged in!');
     } else if (endpoint === 'SIGNUP') {
       console.log('User signed up!');
+
+      const user = new User({
+        id,
+        username,
+        email,
+      });
+
+      const fetchedUser = await userCollection.find({ id: id }).toArray();
+
+      if (fetchedUser.length > 0) {
+        console.log('User already exists!');
+      } else {
+        console.log('New user!');
+        await userCollection.insertOne(user);
+      }
     }
 
     res.send(userResponse.data);

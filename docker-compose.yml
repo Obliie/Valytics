@@ -66,6 +66,8 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=${AUTH_DB_USER}
       - MONGO_INITDB_ROOT_PASSWORD=${AUTH_DB_PASS}
     command: --port ${AUTH_DB_PORT}
+    ports:
+      - ${HOST}:${AUTH_DB_PORT}:${AUTH_DB_PORT}
     profiles:
       - backend
     networks:
