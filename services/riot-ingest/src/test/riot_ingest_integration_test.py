@@ -18,6 +18,9 @@ def test_get_match_data() -> None:
             riot_ingest_pb2.GetMatchDataRequest(match_id="7b2412ad-d530-4bec-a112-01b171bb4959")
         )
     assert response.matches_info.match_id == "7b2412ad-d530-4bec-a112-01b171bb4959"
+    assert response.matches_info.is_completed == True
+    assert response.players_info[0].stats.score == 3461
+    assert response.teams_info[1].rounds_won == 13
     # Define the path to the directory you want to list files from
 
 

@@ -76,20 +76,65 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
             match_info_proto.season_id = match_info_list["seasonId"]
             return match_info_proto
 
+        def populate_teams_info():
+            teams = []
+            teams_list = match_data["teams"]
+
+            for team in teams_list:
+                teams_proto = match_pb2.TeamsInformation()
+                teams_proto.team_id = team["teamId"]
+                teams_proto.won = team["won"]
+                teams_proto.rounds_played = team["roundsPlayed"]
+                teams_proto.rounds_won = team["roundsWon"]
+                teams_proto.num_points = team["numPoints"]
+                teams.append(teams_proto)
+
+            return teams
+
+        def populate_player_info():
+            players = []
+            players_list = match_data["players"]
+
+            for player in players_list:
+                stats_list = player["stats"]
+                stat_proto = match_pb2.PlayerStats()
+                stat_proto.score = stats_list["score"]
+                stat_proto.rounds_played = stats_list["roundsPlayed"]
+                stat_proto.kills = stats_list["kills"]
+                stat_proto.deaths = stats_list["deaths"]
+                stat_proto.assists = stats_list["assists"]
+                stat_proto.play_time = stats_list["playtimeMillis"]
+
+                player_proto = match_pb2.PlayerInformation()
+                player_proto.stats.CopyFrom(stat_proto)
+                player_proto.puu_id = player["puuid"]
+
+                if "gameName" in player and player["gameName"]:
+                    player_proto.game_name = player["gameName"]
+
+                if "tagLine" in player and player["tagLine"]:
+                    player_proto.tag_line = player["tagLine"]
+
+                player_proto.team_id = player["teamId"]
+                player_proto.party_id = player["partyId"]
+                player_proto.character_id = player["characterId"]
+                player_proto.competitive_tier = player["competitiveTier"]
+                player_proto.player_card = player["playerCard"]
+                player_proto.player_title = player["playerTitle"]
+                players.append(player_proto)
+            return players
+
         if match_data:
             response_message = riot_ingest_pb2.GetMatchDataResponse()
             match_info_proto = populate_match_info()
             response_message.matches_info.CopyFrom(match_info_proto)
 
-            players = []
-            players_list = match_data["players"]
+            players_proto = populate_player_info()
+            response_message.players_info.extend(players_proto)
 
-            for player in players_list:
-                player_proto = match_pb2.PlayerInformation()
-                player_proto.puu_id = player["puuid"]
-                players.append(player_proto)
+            teams_proto = populate_teams_info()
+            response_message.teams_info.extend(teams_proto)
 
-            response_message.players_info.extend(players)
             return response_message
 
         return riot_ingest_pb2.GetMatchDataResponse()
