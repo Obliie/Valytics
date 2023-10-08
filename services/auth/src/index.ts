@@ -1,9 +1,13 @@
 import axios from 'axios';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import dotenv from 'dotenv';
-import express from 'express';
+import express, { Request, Response } from 'express';
+import { sign } from 'jsonwebtoken';
 import path from 'path';
 import User from './User';
 import db from './db';
+import auth from './middleware/auth';
 
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
@@ -11,8 +15,29 @@ const app = express();
 
 const userCollection = db.useDb('auth').collection('users');
 
+app.use(
+  cors({
+    origin: process.env.CLIENT_REDIRECT_URL,
+    credentials: true,
+  }),
+);
+
+app.use(cookieParser());
+
+// Apply the auth middleware to all routes
+app.use(auth);
+
 app.get('/', (_req, res) => {
   res.send('Hello, TypeScript with Express!');
+});
+
+// Route to check if user has been set
+app.get('/user', (req: Request, res: Response) => {
+  if (req.user) {
+    res.send(req.user);
+  } else {
+    res.status(401).send('Not Authenticated');
+  }
 });
 
 // Function to handle Discord callback after logging in/signing up
@@ -28,11 +53,9 @@ const handleDiscordOAuth = async (
 
     if (req.query.error) {
       // User canceled authorization
-      console.log('User canceled authorization');
-      // You can display a message or take other actions here
-      return res.status(400).send('Authorization cancelled by the user');
+      console.log('User canceled authorization ', req.query.error);
+      res.redirect(process.env.CLIENT_REDIRECT_URL as string);
     }
-
     // If there is no error parameter, continue with the OAuth flow
     const code = req.query.code as string;
     const params = new URLSearchParams({
@@ -60,9 +83,22 @@ const handleDiscordOAuth = async (
     // Get user details
     const { id, username, email } = userResponse.data;
 
-    // TODO: Handle additional logic based on the endpoint
+    // Handle the different endpoints
     if (endpoint === 'LOGIN') {
       console.log('User logged in!');
+
+      // Check if the user exists and set the token
+      const fetchedUser = await userCollection.find({ id }).toArray();
+
+      if (fetchedUser.length > 0 && !req.user) {
+        console.log(`Hi ${fetchedUser[0].username}`);
+        const token = await sign({ sub: id }, process.env.JWT_SECRET as string, { expiresIn: '1d' });
+        res.cookie('token', token);
+
+        // Handle token login
+      } else {
+        console.log('User not signed up!');
+      }
     } else if (endpoint === 'SIGNUP') {
       console.log('User signed up!');
 
@@ -82,7 +118,7 @@ const handleDiscordOAuth = async (
       }
     }
 
-    res.send(userResponse.data);
+    res.redirect(process.env.CLIENT_REDIRECT_URL as string);
   } catch (error) {
     console.error('An error occurred:', error);
     res.status(500).send('An error occurred');
@@ -90,7 +126,7 @@ const handleDiscordOAuth = async (
 };
 
 // Discord login endpoint
-app.get('/auth/discord/login', async (req, res) => {
+app.get('/auth/discord/login', async (_req, res) => {
   try {
     const url =
       'https://discord.com/api/oauth2/authorize?client_id=1141746698847260703&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fdiscord%2Flogin%2Fcallback&response_type=code&scope=identify';
@@ -102,7 +138,7 @@ app.get('/auth/discord/login', async (req, res) => {
 });
 
 // Discord sign up endpoint
-app.get('/auth/discord/signup', async (req, res) => {
+app.get('/auth/discord/signup', async (_req, res) => {
   try {
     const url =
       'https://discord.com/api/oauth2/authorize?client_id=1141746698847260703&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fdiscord%2Fsignup%2Fcallback&response_type=code&scope=identify';

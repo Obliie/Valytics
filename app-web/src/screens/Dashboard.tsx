@@ -20,7 +20,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigation, route }) => {
       <Logo />
       <Header>Valytics</Header>
       {/* Display entered email */}
-      <Paragraph>Email: {route.params?.email}</Paragraph>
+      <Paragraph>Email: {route.params?.email ?? 'No email'}</Paragraph>
       <Button
         mode="contained"
         onPress={() =>

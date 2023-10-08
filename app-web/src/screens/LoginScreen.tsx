@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import Background from '../components/Background';
@@ -19,6 +20,7 @@ interface LoginScreenProps {
 }
 
 export default function LoginScreen({ navigation }: LoginScreenProps) {
+  const [user, setUser] = useState(null);
   const [email, setEmail] = useState<{ value: string; error: string }>({
     value: '',
     error: '',
@@ -27,6 +29,22 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
     value: '',
     error: '',
   });
+
+  async function getUser() {
+    try {
+      const response = await axios.get('http://localhost:3000/user', {
+        withCredentials: true,
+      });
+      console.log(response.data);
+      setUser(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    getUser();
+  }, []);
 
   const onLoginPressed = () => {
     // Validate email and password
