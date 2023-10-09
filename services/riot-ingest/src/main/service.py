@@ -91,6 +91,51 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
 
             return teams
 
+        def populate_round_info():
+            rounds = []
+            rounds_list = match_data["roundResults"]
+
+            for round in rounds_list:
+                rounds_proto = match_pb2.RoundsInformation()
+                rounds_proto.round_num = round["roundNum"]
+                rounds_proto.round_result = round["roundResult"]
+                rounds_proto.round_ceremony = round["roundCeremony"]
+                rounds_proto.winning_team = round["winningTeam"]
+                if "bombPlanter" in round and round["bombPlanter"]:
+                    rounds_proto.bomb_planter = round["bombPlanter"]
+                if "bombdefuser" in round and round["bombdefuser"]:
+                    rounds_proto.bomb_defuser = round["bombdefuser"]
+                rounds_proto.plant_round_time = round["plantRoundTime"]
+
+                if "plantPlayerLocations" in round and round["plantPlayerLocations"]:
+                    plant_list = round["plantPlayerLocations"]
+                    plant_locations_proto_list = []  # Create a list to store PlayerLocations protobuf objects
+
+                    for plant_item in plant_list:
+                        plant_locations_proto = match_pb2.PlayerLocations()
+                        plant_player_coordinates_proto = match_pb2.LocationInformation()
+                        plant_locations_proto.puu_id = plant_item["puuid"]
+                        plant_locations_proto.view_radians = plant_item["viewRadians"]
+                        plant_player_coordinates_proto.x = plant_item["location"]["x"]
+                        plant_player_coordinates_proto.y = plant_item["location"]["y"]
+                        plant_locations_proto.location.CopyFrom(plant_player_coordinates_proto)
+                        plant_locations_proto_list.append(plant_locations_proto)
+
+                    rounds_proto.plant_player_locations.extend(plant_locations_proto_list)
+
+                plant_coordinates_proto = match_pb2.LocationInformation()
+                plant_coordinates_proto.x = round["plantLocation"]["x"]
+                plant_coordinates_proto.y = round["plantLocation"]["y"]
+                rounds_proto.plant_location.CopyFrom(plant_coordinates_proto)
+
+                defuse_coordinates_proto = match_pb2.LocationInformation()
+                defuse_coordinates_proto.x = round["defuseLocation"]["x"]
+                defuse_coordinates_proto.y = round["defuseLocation"]["y"]
+                rounds_proto.defuse_location.CopyFrom(defuse_coordinates_proto)
+
+                rounds.append(rounds_proto)
+            return rounds
+
         def populate_player_info():
             players = []
             players_list = match_data["players"]
@@ -134,6 +179,9 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
 
             teams_proto = populate_teams_info()
             response_message.teams_info.extend(teams_proto)
+
+            rounds_proto = populate_round_info()
+            response_message.rounds_info.extend(rounds_proto)
 
             return response_message
 

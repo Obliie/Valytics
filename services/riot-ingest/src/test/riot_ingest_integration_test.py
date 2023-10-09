@@ -21,6 +21,17 @@ def test_get_match_data() -> None:
     assert response.matches_info.is_completed == True
     assert response.players_info[0].stats.score == 3461
     assert response.teams_info[1].rounds_won == 13
+    assert response.rounds_info[0].round_num == 0
+    assert response.rounds_info[2].round_num == 2
+
+    assert (
+        response.rounds_info[2].plant_player_locations[0].puu_id
+        == "inxcpz8Bw4qzirO6sd0OPv4q3SnRzLV0ql4Q2XUq65aDRqfrjGwY3Sj54rr0W9qpvmTtINbI0VNITw"
+    )
+
+    assert response.rounds_info[2].plant_location.x == -2381
+    assert response.rounds_info[2].defuse_location.x == 0
+
     # Define the path to the directory you want to list files from
 
 
