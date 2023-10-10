@@ -12,7 +12,7 @@ import auth from './middleware/auth';
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 const app = express();
-
+// MongoDB for auth
 const userCollection = db.useDb('auth').collection('users');
 
 app.use(
@@ -29,6 +29,17 @@ app.use(auth);
 
 app.get('/', (_req, res) => {
   res.send('Hello, TypeScript with Express!');
+});
+
+app.get('/logout', (req: Request, res: Response) => {
+  // Check if there's a logged in user
+  if (req.user) {
+    // Clear the 'token' cookie to log the user out
+    res.clearCookie('token');
+    res.redirect(process.env.CLIENT_REDIRECT_URL as string);
+  } else {
+    res.status(401).send('Not Authenticated');
+  }
 });
 
 // Route to check if user has been set
@@ -51,12 +62,6 @@ const handleDiscordOAuth = async (
     console.log(`${endpoint} ENDPOINT`);
     console.log(req.query);
 
-    if (req.query.error) {
-      // User canceled authorization
-      console.log('User canceled authorization ', req.query.error);
-      res.redirect(process.env.CLIENT_REDIRECT_URL as string);
-    }
-    // If there is no error parameter, continue with the OAuth flow
     const code = req.query.code as string;
     const params = new URLSearchParams({
       client_id: process.env.DISCORD_CLIENT_ID!,
@@ -87,15 +92,14 @@ const handleDiscordOAuth = async (
     if (endpoint === 'LOGIN') {
       console.log('User logged in!');
 
-      // Check if the user exists and set the token
+      // Attempt to find the user
       const fetchedUser = await userCollection.find({ id }).toArray();
 
+      // If the user already exists and isn't logged in set the token
       if (fetchedUser.length > 0 && !req.user) {
         console.log(`Hi ${fetchedUser[0].username}`);
-        const token = await sign({ sub: id }, process.env.JWT_SECRET as string, { expiresIn: '1d' });
+        const token = sign({ sub: id }, process.env.JWT_SECRET as string, { expiresIn: '1d' });
         res.cookie('token', token);
-
-        // Handle token login
       } else {
         console.log('User not signed up!');
       }
@@ -117,11 +121,10 @@ const handleDiscordOAuth = async (
         await userCollection.insertOne(user);
       }
     }
-
     res.redirect(process.env.CLIENT_REDIRECT_URL as string);
   } catch (error) {
     console.error('An error occurred:', error);
-    res.status(500).send('An error occurred');
+    res.redirect(process.env.CLIENT_REDIRECT_URL as string);
   }
 };
 

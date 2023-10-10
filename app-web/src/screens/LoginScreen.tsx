@@ -20,7 +20,12 @@ interface LoginScreenProps {
 }
 
 export default function LoginScreen({ navigation }: LoginScreenProps) {
-  const [user, setUser] = useState(null);
+  // State for logged in user
+  const [user, setUser] = useState({
+    _id: null,
+    id: null,
+    username: null,
+  });
   const [email, setEmail] = useState<{ value: string; error: string }>({
     value: '',
     error: '',
@@ -30,6 +35,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
     error: '',
   });
 
+  // Fetch user details from the backend
   async function getUser() {
     try {
       const response = await axios.get('http://localhost:3000/user', {
@@ -42,7 +48,9 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
     }
   }
 
+  // Fetch user details from the backend when the component mounts
   useEffect(() => {
+    // Call the getUser function to retrieve user data
     getUser();
   }, []);
 
@@ -71,14 +79,19 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
   const onDiscordLoginPressed = () => {
     // TO DO: Handle Discord login
     console.log('DISCORD LOGIN');
-    console.log(`http://${process.env.HOST}:${process.env.NODE_PORT}/auth/discord/login`);
+  };
+
+  const onLogout = () => {
+    console.log('LOGGED OUT');
+    // Update user state
+    setUser({ _id: null, id: null, username: null });
   };
 
   return (
     <Background>
+      <h1>Hi {user.username ?? 'Not Logged In'}</h1>
       <Logo />
       <Header>Login</Header>
-
       <InputField
         label="Email"
         returnKeyType="next"
@@ -120,6 +133,12 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
       <Button mode="contained" onPress={onDiscordLoginPressed} icon={require('../../assets/discord-logo.png')}>
         <a href="http://localhost:3000/auth/discord/login">
           <Text style={appStyles.buttonText}>Login with Discord</Text>
+        </a>
+      </Button>
+
+      <Button mode="contained" onPress={onLogout}>
+        <a href="http://localhost:3000/logout">
+          <Text style={appStyles.buttonText}>Logout Test</Text>
         </a>
       </Button>
 
