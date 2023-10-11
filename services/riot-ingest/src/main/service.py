@@ -107,21 +107,28 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
                     rounds_proto.bomb_defuser = round["bombdefuser"]
                 rounds_proto.plant_round_time = round["plantRoundTime"]
 
-                if "plantPlayerLocations" in round and round["plantPlayerLocations"]:
-                    plant_list = round["plantPlayerLocations"]
-                    plant_locations_proto_list = []  # Create a list to store PlayerLocations protobuf objects
+                def field_location(field_name):
+                    if field_name in round and round[field_name]:
+                        field_list = round[field_name]
+                        field_locations_proto_list = []  # Create a list to store PlayerLocations protobuf objects
 
-                    for plant_item in plant_list:
-                        plant_locations_proto = match_pb2.PlayerLocations()
-                        plant_player_coordinates_proto = match_pb2.LocationInformation()
-                        plant_locations_proto.puu_id = plant_item["puuid"]
-                        plant_locations_proto.view_radians = plant_item["viewRadians"]
-                        plant_player_coordinates_proto.x = plant_item["location"]["x"]
-                        plant_player_coordinates_proto.y = plant_item["location"]["y"]
-                        plant_locations_proto.location.CopyFrom(plant_player_coordinates_proto)
-                        plant_locations_proto_list.append(plant_locations_proto)
+                        for field_item in field_list:
+                            field_locations_proto = match_pb2.PlayerLocations()
+                            field_player_coordinates_proto = match_pb2.LocationInformation()
+                            field_locations_proto.puu_id = field_item["puuid"]
+                            field_locations_proto.view_radians = field_item["viewRadians"]
+                            field_player_coordinates_proto.x = field_item["location"]["x"]
+                            field_player_coordinates_proto.y = field_item["location"]["y"]
+                            field_locations_proto.location.CopyFrom(field_player_coordinates_proto)
+                            field_locations_proto_list.append(field_locations_proto)
 
-                    rounds_proto.plant_player_locations.extend(plant_locations_proto_list)
+                        if field_name == "plantPlayerLocations":
+                            rounds_proto.plant_player_locations.extend(field_locations_proto_list)
+                        elif field_name == "defusePlayerLocations":
+                            rounds_proto.defuse_player_locations.extend(field_locations_proto_list)
+
+                field_location("plantPlayerLocations")
+                field_location("defusePlayerLocations")
 
                 plant_coordinates_proto = match_pb2.LocationInformation()
                 plant_coordinates_proto.x = round["plantLocation"]["x"]
@@ -132,6 +139,9 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
                 defuse_coordinates_proto.x = round["defuseLocation"]["x"]
                 defuse_coordinates_proto.y = round["defuseLocation"]["y"]
                 rounds_proto.defuse_location.CopyFrom(defuse_coordinates_proto)
+                rounds_proto.plant_site = round["plantSite"]
+                rounds_proto.defuse_round_time = round["defuseRoundTime"]
+                rounds_proto.round_result_code = round["roundResultCode"]
 
                 rounds.append(rounds_proto)
             return rounds

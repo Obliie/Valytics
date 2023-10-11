@@ -29,6 +29,11 @@ def test_get_match_data() -> None:
         == "inxcpz8Bw4qzirO6sd0OPv4q3SnRzLV0ql4Q2XUq65aDRqfrjGwY3Sj54rr0W9qpvmTtINbI0VNITw"
     )
 
+    assert (
+        response.rounds_info[8].defuse_player_locations[0].puu_id
+        == "FjXIt87aLFSWcVkZJhxiTyAgf90zeiz2yjiPQtxbmng8oYlFeqwS9ziS7-Er8NClXt2ephk_gS754g"
+    )
+
     assert response.rounds_info[2].plant_location.x == -2381
     assert response.rounds_info[2].defuse_location.x == 0
 
