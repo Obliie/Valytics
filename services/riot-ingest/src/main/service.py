@@ -107,6 +107,28 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
                     rounds_proto.bomb_defuser = round["bombdefuser"]
                 rounds_proto.plant_round_time = round["plantRoundTime"]
 
+                def player_stats():
+                    stats_list = round["playerStats"]
+                    stats_proto_list = []
+
+                    for stats_item in stats_list:
+                        stats_proto = match_pb2.PlayerRoundStatsInformation()
+                        stats_proto.puu_id = stats_item["puuid"]
+                        stats_proto.score = stats_item["score"]
+                        kills_proto_list = []
+
+                        kills_list = stats_item["kills"]
+
+                        kills_proto = match_pb2.KillsInformation()
+                        kills_proto.game_start = kills_item["timeSinceGameStartMillis"]
+                        kills_proto_list.append(kills_proto)
+
+                        stats_proto.kills.extend(kills_proto_list)
+                        stats_proto_list.append(stats_proto)
+                    rounds_proto.player_stats.extend(stats_proto_list)
+
+                player_stats()
+
                 def field_location(field_name):
                     if field_name in round and round[field_name]:
                         field_list = round[field_name]

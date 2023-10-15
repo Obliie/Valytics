@@ -28,6 +28,10 @@ def test_get_match_data() -> None:
         response.rounds_info[2].plant_player_locations[0].puu_id
         == "inxcpz8Bw4qzirO6sd0OPv4q3SnRzLV0ql4Q2XUq65aDRqfrjGwY3Sj54rr0W9qpvmTtINbI0VNITw"
     )
+    assert (
+        response.rounds_info[2].plant_player_locations[1].puu_id
+        == "Y2X9ZAnysEx5cxszvriWCL62y4Q5upG5-CFHafgqUgOgrAk1HHficYZRoOxcdN9bri4rMlcv8798bQ"
+    )
 
     assert (
         response.rounds_info[8].defuse_player_locations[0].puu_id
@@ -36,8 +40,17 @@ def test_get_match_data() -> None:
 
     assert response.rounds_info[2].plant_location.x == -2381
     assert response.rounds_info[2].defuse_location.x == 0
+    assert (
+        response.rounds_info[0].player_stats[0].puu_id
+        == "FjXIt87aLFSWcVkZJhxiTyAgf90zeiz2yjiPQtxbmng8oYlFeqwS9ziS7-Er8NClXt2ephk_gS754g"
+    )
+    assert (
+        response.rounds_info[0].player_stats[1].puu_id
+        == "vnE1JAJyVlf08fJIwuo4zPMjIZZuvlChvEYsDPmMZbdT1Dbg0rmtDLUr1Z22TTfP4pHGEyT-FmbuPA"
+    )
 
-    # Define the path to the directory you want to list files from
+    assert response.rounds_info[0].player_stats[1].kills[0].game_start == 132254
+    assert response.rounds_info[1].player_stats[1].kills[0].game_start == 260604
 
 
 def test_get_account_by_riot_ID() -> None:
