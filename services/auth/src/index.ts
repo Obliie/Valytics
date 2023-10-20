@@ -131,8 +131,7 @@ const handleDiscordOAuth = async (
 // Discord login endpoint
 app.get('/auth/discord/login', async (_req, res) => {
   try {
-    const url =
-      'https://discord.com/api/oauth2/authorize?client_id=1141746698847260703&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fdiscord%2Flogin%2Fcallback&response_type=code&scope=identify';
+    const url = process.env.DISCORD_LOGIN_URI as string;
     res.redirect(url);
   } catch (error) {
     console.error('An error occurred:', error);
@@ -143,8 +142,7 @@ app.get('/auth/discord/login', async (_req, res) => {
 // Discord sign up endpoint
 app.get('/auth/discord/signup', async (_req, res) => {
   try {
-    const url =
-      'https://discord.com/api/oauth2/authorize?client_id=1141746698847260703&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fdiscord%2Fsignup%2Fcallback&response_type=code&scope=identify';
+    const url = process.env.DISCORD_SIGNUP_URI as string;
     res.redirect(url);
   } catch (error) {
     console.error('An error occurred:', error);
