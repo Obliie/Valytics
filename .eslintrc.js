@@ -16,7 +16,7 @@ module.exports = {
     },
   ],
   parserOptions: {
-    project: ['app-web/tsconfig.json'],
+    project: ['app-web/tsconfig.json', 'services/auth/tsconfig.json'],
   },
   rules: {
     'react/react-in-jsx-scope': 'off',
