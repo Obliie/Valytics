@@ -1,8 +1,22 @@
 syntax = "proto3";
-
 package services;
+import "common/match.proto";
+
 
 // Match service
 service Match {
 
+    rpc GetMatchData(GetMatchDataRequest) returns (GetMatchDataResponse) {}
+
+}
+
+message GetMatchDataRequest {
+    string match_id = 1;
+}
+
+message GetMatchDataResponse {
+    common.MatchInformation matches_info = 1;
+    repeated common.PlayerInformation players_info = 2;
+    repeated common.TeamsInformation teams_info = 3; 
+    repeated common.RoundsInformation rounds_info = 4;
 }
