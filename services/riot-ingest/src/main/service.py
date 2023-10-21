@@ -130,6 +130,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
                 if "bombdefuser" in round and round["bombdefuser"]:
                     rounds_proto.bomb_defuser = round["bombdefuser"]
                 rounds_proto.plant_round_time = round["plantRoundTime"]
+                rounds_proto.round_result_code = round["roundResultCode"]
 
                 def player_stats():
                     stats_list = round["playerStats"]
@@ -139,8 +140,35 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
                         stats_proto = match_pb2.PlayerRoundStatsInformation()
                         stats_proto.puu_id = stats_item["puuid"]
                         stats_proto.score = stats_item["score"]
-                        kills_proto_list = []
 
+                        damage_proto_list = []
+                        damage_list = stats_item["damage"]
+
+                        for damage_item in damage_list:
+                            damage_proto = match_pb2.DamageInformation()
+                            damage_proto.receiver = damage_item["receiver"]
+                            damage_proto.damage = damage_item["damage"]
+                            damage_proto.leg_shots = damage_item["legshots"]
+                            damage_proto.body_shots = damage_item["bodyshots"]
+                            damage_proto.head_shots = damage_item["headshots"]
+                            damage_proto_list.append(damage_proto)
+
+                        stats_proto.damage.extend(damage_proto_list)
+
+                        economy_list = stats_item["economy"]
+                        economy_proto = match_pb2.EconomyInformation()
+                        economy_proto.loadout_value = economy_list["loadoutValue"]
+                        economy_proto.weapon = economy_list["weapon"]
+                        economy_proto.armor = economy_list["armor"]
+                        economy_proto.remaining = economy_list["remaining"]
+                        economy_proto.spent = economy_list["spent"]
+
+                        stats_proto.economy.CopyFrom(economy_proto)
+
+                        kills_proto_list = []
+                        kills_list = stats_item["kills"]
+
+                        kills_proto_list = []
                         kills_list = stats_item["kills"]
 
                         for kills_item in kills_list:

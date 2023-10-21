@@ -62,6 +62,9 @@ def test_get_match_data() -> None:
     assert response.rounds_info[0].player_stats[1].kills[0].player_locations[0].view_radians == 2.7340894
 
     assert response.rounds_info[0].player_stats[1].kills[0].finishing_damage.damage_type == "WEAPON"
+    assert response.rounds_info[0].player_stats[0].damage[0].leg_shots == 0
+    assert response.rounds_info[0].player_stats[0].damage[1].leg_shots == 2
+    assert response.rounds_info[0].player_stats[0].economy.spent == 800
 
 
 def test_get_account_by_riot_ID() -> None:
