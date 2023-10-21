@@ -2,9 +2,6 @@ syntax = "proto3";
 
 package common;
 
-
-
-
 message MatchInformation{
     string match_id = 1;
     string map_id  = 2;
@@ -72,7 +69,7 @@ message KillsInformation{
     string victim = 4;  // PUUID
     LocationInformation victim_location = 5;
     repeated string assistants = 6;  // List of PUUIDs
-    repeated LocationInformation player_locations = 7;
+    repeated PlayerLocations player_locations = 7;
     FinishingDamageInformation finishing_damage = 8;
 
 }

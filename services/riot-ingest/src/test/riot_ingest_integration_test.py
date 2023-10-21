@@ -50,7 +50,18 @@ def test_get_match_data() -> None:
     )
 
     assert response.rounds_info[0].player_stats[1].kills[0].game_start == 132254
+    assert response.rounds_info[0].player_stats[1].kills[0].victim_location.x == -642
+
     assert response.rounds_info[1].player_stats[1].kills[0].game_start == 260604
+
+    assert (
+        response.rounds_info[0].player_stats[1].kills[0].assistants[1]
+        == "vnE1JAJyVlf08fJIwuo4zPMjIZZuvlChvEYsDPmMZbdT1Dbg0rmtDLUr1Z22TTfP4pHGEyT-FmbuLA"
+    )
+
+    assert response.rounds_info[0].player_stats[1].kills[0].player_locations[0].view_radians == 2.7340894
+
+    assert response.rounds_info[0].player_stats[1].kills[0].finishing_damage.damage_type == "WEAPON"
 
 
 def test_get_account_by_riot_ID() -> None:

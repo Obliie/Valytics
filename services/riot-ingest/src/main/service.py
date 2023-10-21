@@ -91,7 +91,31 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
 
             return teams
 
+        def populate_location(field_list):
+            field_locations_proto_list = []
+            for field_item in field_list:
+                field_locations_proto = match_pb2.PlayerLocations()
+                field_player_coordinates_proto = match_pb2.LocationInformation()
+                field_locations_proto.puu_id = field_item["puuid"]
+                field_locations_proto.view_radians = field_item["viewRadians"]
+                field_player_coordinates_proto.x = field_item["location"]["x"]
+                field_player_coordinates_proto.y = field_item["location"]["y"]
+                field_locations_proto.location.CopyFrom(field_player_coordinates_proto)
+                field_locations_proto_list.append(field_locations_proto)
+            return field_locations_proto_list
+
         def populate_round_info():
+            def field_location(field_name):
+                if field_name in round and round[field_name]:
+                    field_list = round[field_name]
+                    field_locations_proto_list = []  # Create a list to store PlayerLocations protobuf objects
+                    field_locations_proto_list = populate_location(field_list)
+
+                    if field_name == "plantPlayerLocations":
+                        rounds_proto.plant_player_locations.extend(field_locations_proto_list)
+                    elif field_name == "defusePlayerLocations":
+                        rounds_proto.defuse_player_locations.extend(field_locations_proto_list)
+
             rounds = []
             rounds_list = match_data["roundResults"]
 
@@ -119,35 +143,40 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
 
                         kills_list = stats_item["kills"]
 
-                        kills_proto = match_pb2.KillsInformation()
-                        kills_proto.game_start = kills_item["timeSinceGameStartMillis"]
-                        kills_proto_list.append(kills_proto)
+                        for kills_item in kills_list:
+                            kills_proto = match_pb2.KillsInformation()
+                            kills_proto.game_start = kills_item["timeSinceGameStartMillis"]
+                            kills_proto.round_start = kills_item["timeSinceRoundStartMillis"]
+                            kills_proto.killer = kills_item["killer"]
+                            kills_proto.victim = kills_item["victim"]
+
+                            victim_location_proto = match_pb2.LocationInformation()
+                            victim_location_proto.x = kills_item["victimLocation"]["x"]
+                            victim_location_proto.y = kills_item["victimLocation"]["y"]
+                            kills_proto.victim_location.CopyFrom(victim_location_proto)
+
+                            field_list = kills_item["playerLocations"]
+                            field_locations_proto_list = populate_location(field_list)
+                            kills_proto.player_locations.extend(field_locations_proto_list)
+
+                            damage_proto = match_pb2.FinishingDamageInformation()
+                            damage_list = kills_item["finishingDamage"]
+                            damage_proto.damage_type = damage_list["damageType"]
+                            damage_proto.damage_item = damage_list["damageItem"]
+                            damage_proto.is_secondary_fire_mode = damage_list["isSecondaryFireMode"]
+                            kills_proto.finishing_damage.CopyFrom(damage_proto)
+
+                            assistant_list = kills_item["assistants"]
+                            for assistant in assistant_list:
+                                kills_proto.assistants.extend([assistant])
+
+                            kills_proto_list.append(kills_proto)
 
                         stats_proto.kills.extend(kills_proto_list)
                         stats_proto_list.append(stats_proto)
                     rounds_proto.player_stats.extend(stats_proto_list)
 
                 player_stats()
-
-                def field_location(field_name):
-                    if field_name in round and round[field_name]:
-                        field_list = round[field_name]
-                        field_locations_proto_list = []  # Create a list to store PlayerLocations protobuf objects
-
-                        for field_item in field_list:
-                            field_locations_proto = match_pb2.PlayerLocations()
-                            field_player_coordinates_proto = match_pb2.LocationInformation()
-                            field_locations_proto.puu_id = field_item["puuid"]
-                            field_locations_proto.view_radians = field_item["viewRadians"]
-                            field_player_coordinates_proto.x = field_item["location"]["x"]
-                            field_player_coordinates_proto.y = field_item["location"]["y"]
-                            field_locations_proto.location.CopyFrom(field_player_coordinates_proto)
-                            field_locations_proto_list.append(field_locations_proto)
-
-                        if field_name == "plantPlayerLocations":
-                            rounds_proto.plant_player_locations.extend(field_locations_proto_list)
-                        elif field_name == "defusePlayerLocations":
-                            rounds_proto.defuse_player_locations.extend(field_locations_proto_list)
 
                 field_location("plantPlayerLocations")
                 field_location("defusePlayerLocations")
