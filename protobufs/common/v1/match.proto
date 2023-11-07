@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package common;
+package protobufs.common.v1;
 
 message MatchInformation{
     string match_id = 1;
@@ -53,7 +53,7 @@ message LocationInformation{
 message PlayerLocations{
     string puu_id = 1;
     double view_radians = 2;  // Changed to double
-    LocationInformation location = 3;   
+    LocationInformation location = 3;
 }
 
 message FinishingDamageInformation{

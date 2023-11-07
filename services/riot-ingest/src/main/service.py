@@ -23,8 +23,8 @@ import logging
 import os
 
 import grpc
-from protobufs.services import riot_ingest_pb2, riot_ingest_pb2_grpc
-from protobufs.common import match_pb2, match_pb2_grpc
+from protobufs.services.v1 import riot_ingest_pb2, riot_ingest_pb2_grpc
+from protobufs.common.v1 import match_pb2, match_pb2_grpc
 
 from service_common.http_util import request_get
 from service_common.service_logging import init_logging, log_and_flush
@@ -382,7 +382,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
                 elif input_list == "acts":
                     character_proto.parent_id = character["parentId"]
                     character_proto.type = character["type"]
-                    character_proto.isActive = str(character["isActive"])
+                    character_proto.is_active = str(character["isActive"])
                 else:
                     character_proto.asset_name = character["assetName"]
 

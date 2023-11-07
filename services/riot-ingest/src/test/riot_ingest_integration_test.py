@@ -3,7 +3,7 @@ import os
 
 import grpc
 
-from protobufs.services import riot_ingest_pb2, riot_ingest_pb2_grpc
+from protobufs.services.v1 import riot_ingest_pb2, riot_ingest_pb2_grpc
 from service_common.http_util import request_get
 import json
 
@@ -111,8 +111,10 @@ def test_get_leaderboard_data() -> None:
     with grpc.insecure_channel(f"riot-ingest:{ os.environ['RIOT_INGEST_SERVICE_PORT' ]}") as channel:
         stub = riot_ingest_pb2_grpc.RiotIngestServiceStub(channel)
         response = stub.GetLeaderboardData(riot_ingest_pb2.GetLeaderboardDataRequest(act_id=my_act_id))
+        print(riot_ingest_pb2.ActId.Name(response.act_id))
+
         assert riot_ingest_pb2.ActId.Name(response.act_id) == my_act_id
-        assert riot_ingest_pb2.shard.Name(response.shard) == "LATAM"
+        assert riot_ingest_pb2.Shard.Name(response.shard) == "LATAM"
 
         assert response.total_players == 312
         assert response.players[0].game_name == "hahas das"
