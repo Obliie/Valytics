@@ -1,6 +1,6 @@
 syntax = "proto3";
 package protobufs.services.v1;
-import "protobufs/common/v1/match.proto";
+import "common/v1/match.proto";
 
 /*
  * Riot Ingest service
@@ -196,6 +196,6 @@ message GetMatchDataRequest {
 message GetMatchDataResponse {
     common.v1.MatchInformation matches_info = 1;
     repeated common.v1.PlayerInformation players_info = 2;
-    repeated common.v1.TeamsInformation teams_info = 3; 
+    repeated common.v1.TeamsInformation teams_info = 3;
     repeated common.v1.RoundsInformation rounds_info = 4;
 }

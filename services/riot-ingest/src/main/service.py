@@ -31,11 +31,17 @@ from service_common.service_logging import init_logging, log_and_flush
 
 
 RIOT_API_URL = "http://mockserver:1080"
+RIOT_API_KEY_FILE = "/run/secrets/riot-api-key"
+
 MATCH_DATA_ENDPOINT = f"{RIOT_API_URL}/val/match/v1/matches/{{match_id}}"
-ACCOUNT_DATA_ENDPOINT = f"{RIOT_API_URL}/account/v1/accounts/by-riot-id/{{game_name}}/{{tag_line}}"
+ACCOUNT_DATA_ENDPOINT = (
+    f"{RIOT_API_URL}/account/v1/accounts/by-riot-id/{{game_name}}/{{tag_line}}"
+)
 MATCH_LIST_DATA_ENDPOINT = f"{RIOT_API_URL}/val/match/v1/matchlists/by-puuid/{{puu_id}}"
 CONTENT_DATA_ENDPOINT = f"{RIOT_API_URL}/val/content/v1/contents"
-LEADERBOARD_DATA_ENDPOINT = f"{RIOT_API_URL}/val/ranked/v1/leaderboards/by-act/{{act_id}}"
+LEADERBOARD_DATA_ENDPOINT = (
+    f"{RIOT_API_URL}/val/ranked/v1/leaderboards/by-act/{{act_id}}"
+)
 
 
 class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
@@ -48,17 +54,21 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
     enabling seamless data retrieval and organization for the application's components.
     """
 
+    def __init__(self):
+        with open(RIOT_API_KEY_FILE) as riot_key_file:
+            self.riot_api_key = riot_key_file.read()
+
     def GetMatchData(
-        self, request: riot_ingest_pb2.GetMatchDataRequest, context: grpc.ServicerContext
+        self,
+        request: riot_ingest_pb2.GetMatchDataRequest,
+        context: grpc.ServicerContext,
     ) -> riot_ingest_pb2.GetMatchDataResponse:
         """Fetches match data from Riot Games API and returns the retrieved data."""
         url = MATCH_DATA_ENDPOINT.format(match_id=request.match_id)
         print(url, flush=True)
 
-        # headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
-
-        # match_data = request_get(url, headers, context)
-        match_data = request_get(url, context)
+        headers = {"X-Riot-Token": self.riot_api_key}
+        match_data = request_get(url, context, headers)
 
         def populate_match_info():
             match_info_list = match_data["matchInfo"]
@@ -76,45 +86,45 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
             match_info_proto.season_id = match_info_list["seasonId"]
             return match_info_proto
 
-        def populate_teams_info():
-            teams = []
-            teams_list = match_data["teams"]
+        populate_teams_info = lambda: [
+            match_pb2.TeamsInformation(
+                team_id=team["teamId"],
+                won=team["won"],
+                rounds_played=team["roundsPlayed"],
+                rounds_won=team["roundsWon"],
+                num_points=team["numPoints"],
+            )
+            for team in match_data["teams"]
+        ]
 
-            for team in teams_list:
-                teams_proto = match_pb2.TeamsInformation()
-                teams_proto.team_id = team["teamId"]
-                teams_proto.won = team["won"]
-                teams_proto.rounds_played = team["roundsPlayed"]
-                teams_proto.rounds_won = team["roundsWon"]
-                teams_proto.num_points = team["numPoints"]
-                teams.append(teams_proto)
-
-            return teams
-
-        def populate_location(field_list):
-            field_locations_proto_list = []
-            for field_item in field_list:
-                field_locations_proto = match_pb2.PlayerLocations()
-                field_player_coordinates_proto = match_pb2.LocationInformation()
-                field_locations_proto.puu_id = field_item["puuid"]
-                field_locations_proto.view_radians = field_item["viewRadians"]
-                field_player_coordinates_proto.x = field_item["location"]["x"]
-                field_player_coordinates_proto.y = field_item["location"]["y"]
-                field_locations_proto.location.CopyFrom(field_player_coordinates_proto)
-                field_locations_proto_list.append(field_locations_proto)
-            return field_locations_proto_list
+        populate_location = lambda field_list: [
+            match_pb2.PlayerLocations(
+                puu_id=field_item["puuid"],
+                view_radians=field_item["viewRadians"],
+                location=match_pb2.LocationInformation(
+                    x=field_item["location"]["x"], y=field_item["location"]["y"]
+                ),
+            )
+            for field_item in field_list
+        ]
 
         def populate_round_info():
             def field_location(field_name):
                 if field_name in round and round[field_name]:
                     field_list = round[field_name]
-                    field_locations_proto_list = []  # Create a list to store PlayerLocations protobuf objects
+                    field_locations_proto_list = (
+                        []
+                    )  # Create a list to store PlayerLocations protobuf objects
                     field_locations_proto_list = populate_location(field_list)
 
                     if field_name == "plantPlayerLocations":
-                        rounds_proto.plant_player_locations.extend(field_locations_proto_list)
+                        rounds_proto.plant_player_locations.extend(
+                            field_locations_proto_list
+                        )
                     elif field_name == "defusePlayerLocations":
-                        rounds_proto.defuse_player_locations.extend(field_locations_proto_list)
+                        rounds_proto.defuse_player_locations.extend(
+                            field_locations_proto_list
+                        )
 
             rounds = []
             rounds_list = match_data["roundResults"]
@@ -173,8 +183,12 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
 
                         for kills_item in kills_list:
                             kills_proto = match_pb2.KillsInformation()
-                            kills_proto.game_start = kills_item["timeSinceGameStartMillis"]
-                            kills_proto.round_start = kills_item["timeSinceRoundStartMillis"]
+                            kills_proto.game_start = kills_item[
+                                "timeSinceGameStartMillis"
+                            ]
+                            kills_proto.round_start = kills_item[
+                                "timeSinceRoundStartMillis"
+                            ]
                             kills_proto.killer = kills_item["killer"]
                             kills_proto.victim = kills_item["victim"]
 
@@ -185,13 +199,17 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
 
                             field_list = kills_item["playerLocations"]
                             field_locations_proto_list = populate_location(field_list)
-                            kills_proto.player_locations.extend(field_locations_proto_list)
+                            kills_proto.player_locations.extend(
+                                field_locations_proto_list
+                            )
 
                             damage_proto = match_pb2.FinishingDamageInformation()
                             damage_list = kills_item["finishingDamage"]
                             damage_proto.damage_type = damage_list["damageType"]
                             damage_proto.damage_item = damage_list["damageItem"]
-                            damage_proto.is_secondary_fire_mode = damage_list["isSecondaryFireMode"]
+                            damage_proto.is_secondary_fire_mode = damage_list[
+                                "isSecondaryFireMode"
+                            ]
                             kills_proto.finishing_damage.CopyFrom(damage_proto)
 
                             assistant_list = kills_item["assistants"]
@@ -277,14 +295,21 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         return riot_ingest_pb2.GetMatchDataResponse()
 
     def GetAccountByRiotID(
-        self, request: riot_ingest_pb2.GetAccountByRiotIDRequest, context: grpc.ServicerContext
+        self,
+        request: riot_ingest_pb2.GetAccountByRiotIDRequest,
+        context: grpc.ServicerContext,
     ) -> riot_ingest_pb2.GetAccountByRiotIDResponse:
         """Fetches match data from Riot Games API and returns the retrieved data."""
 
-        url = ACCOUNT_DATA_ENDPOINT.format(game_name=request.game_name, tag_line=request.tag_line)
-        # headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
-        # account_data = request_get(url, headers, context)
-        account_data = request_get(url, context)
+        url = ACCOUNT_DATA_ENDPOINT.format(
+            game_name=request.game_name, tag_line=request.tag_line
+        )
+
+        headers = {"X-Riot-Token": self.riot_api_key}
+        account_data = request_get(url, context, headers)
+
+        if account_data is None:
+            context.abort(context.code(), context.details())
 
         if account_data:
             response_message = riot_ingest_pb2.GetAccountByRiotIDResponse()
@@ -296,44 +321,46 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         return riot_ingest_pb2.GetMatchDataResponse()
 
     def GetPlayerMatches(
-        self, request: riot_ingest_pb2.GetPlayerMatchesRequest, context: grpc.ServicerContext
+        self,
+        request: riot_ingest_pb2.GetPlayerMatchesRequest,
+        context: grpc.ServicerContext,
     ) -> riot_ingest_pb2.GetPlayerMatchesResponse:
         """Fetches match data from Riot Games API and returns the retrieved data."""
 
         url = MATCH_LIST_DATA_ENDPOINT.format(puu_id=request.puu_id)
-        # headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
+        headers = {"X-Riot-Token": self.riot_api_key}
+        match_data = request_get(url, context, headers)
 
-        # match_data = request_get(url, headers, context)
-        match_data = request_get(url, context)
+        if match_data is None:
+            context.abort(context.code(), context.details())
 
-        if match_data:
-            response_message = riot_ingest_pb2.GetPlayerMatchesResponse()
-            matches = []
-            match_list = match_data["history"]
-
-            for match in match_list:
-                match_proto = riot_ingest_pb2.PlayersMatches()
-                match_proto.match_id = match["matchId"]
-                match_proto.game_start_time = str(match["gameStartTimeMillis"])
-                match_proto.queue_id = match["queueId"]
-                matches.append(match_proto)
-
-            response_message.puu_id = match_data["puuid"]
-            response_message.history.extend(matches)
-            return response_message
-
-        return riot_ingest_pb2.GetPlayerMatchesResponse()
+        response_message = riot_ingest_pb2.GetPlayerMatchesResponse()
+        response_message.puu_id = match_data["puuid"]
+        response_message.history.extend(
+            [
+                riot_ingest_pb2.PlayersMatches(
+                    match_id=match["matchId"],
+                    game_start_time=str(match["gameStartTimeMillis"]),
+                    queue_id=match["queueId"],
+                )
+                for match in match_data["history"]
+            ]
+        )
+        return response_message
 
     def GetContentData(
-        self, request: riot_ingest_pb2.GetContentDataRequest, context: grpc.ServicerContext
+        self,
+        request: riot_ingest_pb2.GetContentDataRequest,
+        context: grpc.ServicerContext,
     ) -> riot_ingest_pb2.GetContentDataResponse:
         """Fetches match data from Riot Games API and returns the retrieved data."""
 
         url = CONTENT_DATA_ENDPOINT
-        # headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
+        headers = {"X-Riot-Token": self.riot_api_key}
+        context_data = request_get(url, context, headers)
 
-        # context_data = request_get(url, headers, context)
-        context_data = request_get(url, context)
+        if context_data is None:
+            context.abort(context.code(), context.details())
 
         def set_lang(character, response):
             response = riot_ingest_pb2.Languages()
@@ -365,10 +392,11 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
             }
 
             characters = []
-            character_list = context_data[input_list]
 
-            for character in character_list:
-                protobuf_type = protobuf_types.get(input_list, riot_ingest_pb2.GameInformation)
+            for character in context_data[input_list]:
+                protobuf_type = protobuf_types.get(
+                    input_list, riot_ingest_pb2.GameInformation
+                )
                 character_proto = protobuf_type()
 
                 # Common fields
@@ -388,102 +416,104 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
 
                 # Set localized_names if character["name"] is not empty
                 if character["name"]:
-                    response_languages = set_lang(character["localizedNames"], response=riot_ingest_pb2.Languages())
+                    response_languages = set_lang(
+                        character["localizedNames"],
+                        response=riot_ingest_pb2.Languages(),
+                    )
                     character_proto.localized_names.CopyFrom(response_languages)
 
                 characters.append(character_proto)
-
             return characters
 
-        if context_data:
-            response_message = riot_ingest_pb2.GetContentDataResponse()
-            characters = populate_proto_response("characters")
-            response_message.characters_info.extend(characters)
+        response_message = riot_ingest_pb2.GetContentDataResponse()
+        characters = populate_proto_response("characters")
+        response_message.characters_info.extend(characters)
 
-            maps = populate_proto_response("maps")
-            response_message.maps_info.extend(maps)
+        maps = populate_proto_response("maps")
+        response_message.maps_info.extend(maps)
 
-            chromas = populate_proto_response("chromas")
-            response_message.chromas_info.extend(chromas)
+        chromas = populate_proto_response("chromas")
+        response_message.chromas_info.extend(chromas)
 
-            skins = populate_proto_response("skins")
-            response_message.skins_info.extend(skins)
+        skins = populate_proto_response("skins")
+        response_message.skins_info.extend(skins)
 
-            skin_levels = populate_proto_response("skinLevels")
-            response_message.skin_levels_info.extend(skin_levels)
+        skin_levels = populate_proto_response("skinLevels")
+        response_message.skin_levels_info.extend(skin_levels)
 
-            equips = populate_proto_response("equips")
-            response_message.skin_levels_info.extend(equips)
+        equips = populate_proto_response("equips")
+        response_message.skin_levels_info.extend(equips)
 
-            gameModes = populate_proto_response("gameModes")  # DIFFERENT
-            response_message.game_modes_info.extend(gameModes)
+        gameModes = populate_proto_response("gameModes")  # DIFFERENT
+        response_message.game_modes_info.extend(gameModes)
 
-            sprays = populate_proto_response("sprays")
-            response_message.sprays_info.extend(sprays)
+        sprays = populate_proto_response("sprays")
+        response_message.sprays_info.extend(sprays)
 
-            spray_levels = populate_proto_response("sprayLevels")
-            response_message.spray_levels_info.extend(spray_levels)
+        spray_levels = populate_proto_response("sprayLevels")
+        response_message.spray_levels_info.extend(spray_levels)
 
-            charms = populate_proto_response("charms")
-            response_message.charms_info.extend(charms)
+        charms = populate_proto_response("charms")
+        response_message.charms_info.extend(charms)
 
-            charm_levels = populate_proto_response("charmLevels")
-            response_message.charm_levels_info.extend(charm_levels)
+        charm_levels = populate_proto_response("charmLevels")
+        response_message.charm_levels_info.extend(charm_levels)
 
-            player_cards = populate_proto_response("playerCards")
-            response_message.player_cards_info.extend(player_cards)
+        player_cards = populate_proto_response("playerCards")
+        response_message.player_cards_info.extend(player_cards)
 
-            ceremonies = populate_proto_response("ceremonies")
-            response_message.ceremonies_info.extend(ceremonies)
+        ceremonies = populate_proto_response("ceremonies")
+        response_message.ceremonies_info.extend(ceremonies)
 
-            player_titles = populate_proto_response("playerTitles")
-            response_message.player_titles_info.extend(player_titles)
+        player_titles = populate_proto_response("playerTitles")
+        response_message.player_titles_info.extend(player_titles)
 
-            acts = populate_proto_response("acts")  # DIFFERENT
-            response_message.acts_info.extend(acts)
-            return response_message
-
-        return riot_ingest_pb2.GetContentDataResponse()
+        acts = populate_proto_response("acts")  # DIFFERENT
+        response_message.acts_info.extend(acts)
+        return response_message
 
     def GetLeaderboardData(
-        self, request: riot_ingest_pb2.GetLeaderboardDataRequest, context: grpc.ServicerContext
+        self,
+        request: riot_ingest_pb2.GetLeaderboardDataRequest,
+        context: grpc.ServicerContext,
     ) -> riot_ingest_pb2.GetLeaderboardDataResponse:
         """Fetches match data from Riot Games API and returns the retrieved data."""
 
-        url = LEADERBOARD_DATA_ENDPOINT.format(act_id=(riot_ingest_pb2.ActId.Name(request.act_id)))
+        url = LEADERBOARD_DATA_ENDPOINT.format(
+            act_id=(riot_ingest_pb2.ActId.Name(request.act_id))
+        )
+        headers = {"X-Riot-Token": self.riot_api_key}
+        leaderboard_data = request_get(url, context, headers)
 
-        # headers = {"X-Riot-Token": os.environ["RIOT_API_KEY"]}
-        # leaderboard_data = request_get(url, headers, context)
+        if leaderboard_data is None:
+            context.abort(context.code(), context.details())
 
-        leaderboard_data = request_get(url, context)
+        response_message = riot_ingest_pb2.GetLeaderboardDataResponse()
+        response_message.act_id = leaderboard_data["actId"]
+        response_message.shard = leaderboard_data["shard"]
+        response_message.total_players = leaderboard_data["totalPlayers"]
+        response_message.players.extend(
+            [
+                riot_ingest_pb2.PlayerDto(
+                    puu_id=player["puuid"],
+                    game_name=player["gameName"],
+                    tag_line=player["tagLine"],
+                    leaderboard_rank=player["leaderboardRank"],
+                    ranked_rating=player["rankedRating"],
+                    number_of_wins=player["numberOfWins"],
+                )
+                for player in leaderboard_data["players"]
+            ]
+        )
 
-        if leaderboard_data:
-            response_message = riot_ingest_pb2.GetLeaderboardDataResponse()
-            player_data = []
-            players_list = leaderboard_data["players"]
-
-            for player in players_list:
-                player_proto = riot_ingest_pb2.PlayerDto()
-                player_proto.puu_id = player["puuid"]
-                player_proto.game_name = player["gameName"]
-                player_proto.tag_line = player["tagLine"]
-                player_proto.leaderboard_rank = player["leaderboardRank"]
-                player_proto.ranked_rating = player["rankedRating"]
-                player_proto.number_of_wins = player["numberOfWins"]
-                player_data.append(player_proto)
-
-            response_message.players.extend(player_data)
-            response_message.act_id = leaderboard_data["actId"]
-            response_message.shard = leaderboard_data["shard"]
-            response_message.total_players = leaderboard_data["totalPlayers"]
-            return response_message
-
-        return riot_ingest_pb2.GetPlayerMatchesResponse()
+        return response_message
 
 
 def serve() -> None:
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    riot_ingest_pb2_grpc.add_RiotIngestServiceServicer_to_server(RiotIngestServicer(), server)
+    riot_ingest_pb2_grpc.add_RiotIngestServiceServicer_to_server(
+        RiotIngestServicer(), server
+    )
     server.add_insecure_port(f"[::]:{ os.environ['RIOT_INGEST_SERVICE_PORT'] }")
     log_and_flush(logging.INFO, "Starting Riot Ingest service...")
     server.start()

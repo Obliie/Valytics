@@ -22,6 +22,8 @@ services:
       - backend
     networks:
       - valyticsmesh
+    secrets:
+      - riot-api-key
 
   match:
     build:
@@ -159,3 +161,7 @@ networks:
   valyticsmesh:
     driver: bridge
     name: valyticsmesh
+
+secrets:
+  riot-api-key:
+    file: ./secrets/riot_api_key

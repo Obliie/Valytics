@@ -1,8 +1,21 @@
+"""HTTP Utility Functions.
+
+This module provides utility functions for making HTTP requests and converting
+HTTP status codes to gRPC status codes.
+
+Usage:
+- Used by various services to interact with external APIs.
+
+Dependencies:
+- Requires the 'grpc' and 'requests' libraries.
+
+Note:
+Ensure proper error handling and logging for production use.
+"""
+
 import grpc
 import requests
-
 from typing import Dict, Optional
-
 
 HTTP_TO_GRPC_STATUS = {
     200: grpc.StatusCode.OK,
@@ -21,12 +34,11 @@ HTTP_TO_GRPC_STATUS = {
 def http_to_grpc_status_code(http_status_code: int) -> grpc.StatusCode:
     """Converts a HTTP status code to a gRPC status code.
 
-    Arguments:
+    Args:
         http_status_code (int): HTTP status code to convert.
 
     Returns:
-        gRPC status code which is equivalent to the provided HTTP status code.
-
+        grpc.StatusCode: gRPC status code equivalent to the provided HTTP status code.
     """
     return HTTP_TO_GRPC_STATUS.get(http_status_code, grpc.StatusCode.UNKNOWN)
 
@@ -36,28 +48,25 @@ def request_get(
 ) -> Optional[Dict[str, str]]:
     """Makes a GET request to a REST API endpoint from a gRPC context.
 
-    Arguments:
+    Args:
         api_url (str): API endpoint URL to call.
         context (grpc.ServicerContext): gRPC servicer context.
         headers (Dict[str, str]): Optional HTTP headers for the API call.
 
     Returns:
-        Response in JSON format if successful, or None otherwise.
+        Optional[Dict[str, str]]: Response in JSON format if successful, or None otherwise.
     """
     try:
         response = requests.get(api_url, headers=headers)
-
         grpc_status = http_to_grpc_status_code(response.status_code)
         if grpc_status == grpc.StatusCode.OK:
             return response.json()
-        else:
-            context.set_code(grpc_status)
-            context.set_details(f"HTTP error - {response.status_code}: {response.reason}")
+        context.set_code(grpc_status)
+        context.set_details(f"HTTP error - {response.status_code}: {response.reason}")
     except requests.RequestException as e:
         context.set_code(grpc.StatusCode.INTERNAL)
         context.set_details(f"Requests exception: {str(e)}")
     except Exception as e:
         context.set_code(grpc.StatusCode.INTERNAL)
         context.set_details(f"Unhandled exception: {str(e)}")
-
     return None
