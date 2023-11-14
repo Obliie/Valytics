@@ -22,8 +22,6 @@ services:
       - backend
     networks:
       - valyticsmesh
-    secrets:
-      - riot-api-key
 
   match:
     build:
@@ -47,20 +45,41 @@ services:
       - backend
     networks:
       - valyticsmesh
+    configs:
+      - service-config
+    secrets:
+      - mongo-username
+      - mongo-password
 
   ###
   # Databases
   ###
   ranked-match-db:
     image: mongo:5.0.19
+    ports:
+      - ${RANKED_MATCH_DB_PORT}:27001
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=${RANKED_MATCH_DB_USER}
-      - MONGO_INITDB_ROOT_PASSWORD=${RANKED_MATCH_DB_PASS}
-    command: --port ${RANKED_MATCH_DB_PORT}
+      # old code
+      #- MONGO_INITDB_ROOT_USERNAME=${RANKED_MATCH_DB_USER}
+      #- MONGO_INITDB_ROOT_PASSWORD=${RANKED_MATCH_DB_PASS}
+      MONGO_INITDB_ROOT_USERNAME_FILE: /run/secrets/mongo-root-username
+      MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongo-root-password
+      MONGO_INITDB_DATABASE: admin
+      MONGO_USERNAME_FILE: /run/secrets/mongo-username
+      MONGO_PASSWORD_FILE: /run/secrets/mongo-password
+      MONGO_DATABASE: ranked-match
+
+    command: --port ${RANKED_MATCH_DB_PORT} # need this?
+
     profiles:
       - backend
     networks:
       - valyticsmesh
+    secrets:
+      - mongo-root-username
+      - mongo-root-password
+      - mongo-username
+      - mongo-password
 
   ###
   # Build Containers
@@ -162,6 +181,16 @@ networks:
     driver: bridge
     name: valyticsmesh
 
+configs:
+  service-config:
+    file: ./config.yaml
+
 secrets:
-  riot-api-key:
-    file: ./secrets/riot_api_key
+  mongo-root-username:
+    file: ./secrets/mongo_root_username
+  mongo-root-password:
+    file: ./secrets/mongo_root_password
+  mongo-username:
+    file: ./secrets/mongo_username
+  mongo-password:
+    file: ./secrets/mongo_password
