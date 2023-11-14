@@ -22,6 +22,8 @@ services:
       - backend
     networks:
       - valyticsmesh
+    secrets:
+      - riot-api-key
 
   match:
     build:
