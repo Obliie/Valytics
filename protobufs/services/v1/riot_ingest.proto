@@ -48,7 +48,7 @@ message GetPlayerMatchesRequest {
 
 message PlayersMatches {
   string match_id = 1;
-  string game_start_time = 2;
+  uint64 game_start_time = 2;
   string queue_id = 3;
 }
 
