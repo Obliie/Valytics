@@ -1,73 +1,107 @@
-import logging
+"""Integration Tests for the Riot Ingest Service.
+
+This module covers integration tests for key functionalities of the Riot Ingest service,
+validating match data retrieval, account information, player match history, leaderboard data,
+and content information.
+
+Tests:
+- `test_get_match_data`: Validates match details, player statistics, round info, and economy details.
+- `test_get_account_by_riot_ID`: Retrieves account info by Riot ID and asserts response properties.
+- `test_get_player_matches`: Retrieves player match history and asserts response properties.
+- `test_get_leaderboard_data`: Retrieves leaderboard data for a specific Act and asserts response properties.
+- `test_get_content_data`: Requests content data and asserts response properties.
+
+Usage:
+- Run to verify Riot Ingest service functionality.
+
+Dependencies:
+- Requires a running instance of the Riot Ingest service for testing.
+- Utilizes gRPC for communication.
+"""
 import os
+import re
 
 import grpc
-
 from protobufs.services.v1 import riot_ingest_pb2, riot_ingest_pb2_grpc
-from service_common.http_util import request_get
-import json
-
-import re
 
 
 def test_get_match_data() -> None:
-    with grpc.insecure_channel(f"riot-ingest:{ os.environ['RIOT_INGEST_SERVICE_PORT' ]}") as channel:
+    """Test case for the GetMatchData gRPC call.
+
+    Validates various attributes in the response, including match details,
+    player statistics, round information, and economy details.
+
+    Assertions:
+    - Correct number of matches.
+    - Matching player PUUID.
+    - Queue ID of the first match.
+    - Match ID and start time format for each match.
+
+    Raises:
+        AssertionError: If any assertions fail, indicating a discrepancy in the response.
+    """
+    with grpc.insecure_channel(f"riot-ingest:{os.environ['RIOT_INGEST_SERVICE_PORT']}") as channel:
         stub = riot_ingest_pb2_grpc.RiotIngestServiceStub(channel)
 
         response = stub.GetMatchData(
             riot_ingest_pb2.GetMatchDataRequest(match_id="7b2412ad-d530-4bec-a112-01b171bb4959")
         )
         assert response.matches_info.match_id == "7b2412ad-d530-4bec-a112-01b171bb4959"
-        assert response.matches_info.is_completed == True
+        assert response.matches_info.is_completed
         assert response.players_info[0].stats.score == 3461
         assert response.teams_info[1].rounds_won == 13
         assert response.rounds_info[0].round_num == 0
         assert response.rounds_info[2].round_num == 2
 
-        assert (
-            response.rounds_info[2].plant_player_locations[0].puu_id
-            == "inxcpz8Bw4qzirO6sd0OPv4q3SnRzLV0ql4Q2XUq65aDRqfrjGwY3Sj54rr0W9qpvmTtINbI0VNITw"
-        )
-        assert (
-            response.rounds_info[2].plant_player_locations[1].puu_id
-            == "Y2X9ZAnysEx5cxszvriWCL62y4Q5upG5-CFHafgqUgOgrAk1HHficYZRoOxcdN9bri4rMlcv8798bQ"
-        )
+        plant_player_1 = response.rounds_info[2].plant_player_locations[0]
+        plant_player_2 = response.rounds_info[2].plant_player_locations[1]
+        assert plant_player_1.puuid == "inxcpz8Bw4qzirO6sd0OPv4q3SnRzLV0ql4Q2XUq65aDRqfrjGwY3Sj54rr0W9qpvmTtINbI0VNITw"
+        assert plant_player_2.puuid == "Y2X9ZAnysEx5cxszvriWCL62y4Q5upG5-CFHafgqUgOgrAk1HHficYZRoOxcdN9bri4rMlcv8798bQ"
 
-        assert (
-            response.rounds_info[8].defuse_player_locations[0].puu_id
-            == "FjXIt87aLFSWcVkZJhxiTyAgf90zeiz2yjiPQtxbmng8oYlFeqwS9ziS7-Er8NClXt2ephk_gS754g"
-        )
+        defuse_player = response.rounds_info[8].defuse_player_locations[0]
+        assert defuse_player.puuid == "FjXIt87aLFSWcVkZJhxiTyAgf90zeiz2yjiPQtxbmng8oYlFeqwS9ziS7-Er8NClXt2ephk_gS754g"
 
         assert response.rounds_info[2].plant_location.x == -2381
         assert response.rounds_info[2].defuse_location.x == 0
-        assert (
-            response.rounds_info[0].player_stats[0].puu_id
-            == "FjXIt87aLFSWcVkZJhxiTyAgf90zeiz2yjiPQtxbmng8oYlFeqwS9ziS7-Er8NClXt2ephk_gS754g"
-        )
-        assert (
-            response.rounds_info[0].player_stats[1].puu_id
-            == "vnE1JAJyVlf08fJIwuo4zPMjIZZuvlChvEYsDPmMZbdT1Dbg0rmtDLUr1Z22TTfP4pHGEyT-FmbuPA"
-        )
 
-        assert response.rounds_info[0].player_stats[1].kills[0].game_start == 132254
-        assert response.rounds_info[0].player_stats[1].kills[0].victim_location.x == -642
+        player_2_kills = response.rounds_info[0].player_stats[1].kills[0]
 
-        assert response.rounds_info[1].player_stats[1].kills[0].game_start == 260604
+        assert player_2_kills.game_start == 132254
+        assert player_2_kills.victim_location.x == -642
 
-        assert (
-            response.rounds_info[0].player_stats[1].kills[0].assistants[1]
-            == "vnE1JAJyVlf08fJIwuo4zPMjIZZuvlChvEYsDPmMZbdT1Dbg0rmtDLUr1Z22TTfP4pHGEyT-FmbuLA"
-        )
+        player_1_stats = response.rounds_info[1].player_stats[1]
+        assert player_1_stats.kills[0].game_start == 260604
 
-        assert response.rounds_info[0].player_stats[1].kills[0].player_locations[0].view_radians == 2.7340894
+        assistants_list = player_2_kills.assistants
+        assert assistants_list[1] == "vnE1JAJyVlf08fJIwuo4zPMjIZZuvlChvEYsDPmMZbdT1Dbg0rmtDLUr1Z22TTfP4pHGEyT-FmbuLA"
 
-        assert response.rounds_info[0].player_stats[1].kills[0].finishing_damage.damage_type == "WEAPON"
-        assert response.rounds_info[0].player_stats[0].damage[0].leg_shots == 0
-        assert response.rounds_info[0].player_stats[0].damage[1].leg_shots == 2
-        assert response.rounds_info[0].player_stats[0].economy.spent == 800
+        view_radians = player_2_kills.player_locations[0].view_radians
+        assert view_radians == 2.7340894
+
+        finishing_damage_type = player_2_kills.finishing_damage.damage_type
+        assert finishing_damage_type == "WEAPON"
+
+        player_0_stats = response.rounds_info[0].player_stats[0]
+        damage_leg_shots = player_0_stats.damage[0].leg_shots
+        assert damage_leg_shots == 0
+
+        economy_spent = response.rounds_info[0].player_stats[0].economy.spent
+        assert economy_spent == 800
 
 
 def test_get_account_by_riot_ID() -> None:
+    """Test case for Riot Ingest GetAccountByRiotID RPC.
+
+    Retrieves account information by Riot ID, asserts response properties.
+
+    Assertions:
+    - Matching game name.
+    - Matching tag line.
+    - Matching PUUID.
+
+    Raises:
+        AssertionError on failure.
+    """
     my_game_name = "Obli"
     my_tag_line = "0003"
     with grpc.insecure_channel(f"riot-ingest:{ os.environ['RIOT_INGEST_SERVICE_PORT' ]}") as channel:
@@ -79,17 +113,30 @@ def test_get_account_by_riot_ID() -> None:
 
         assert response.game_name == my_game_name
         assert response.tag_line == my_tag_line
-        assert response.puu_id == "xya6wbl5uMkzSdFUPWScfJ1VUUY1-Ip1Qz3AKDBIlt7vV0ZpNQNRKunciG0LnpgcQDPhWbJI_tr9bg"
+        assert response.puuid == "xya6wbl5uMkzSdFUPWScfJ1VUUY1-Ip1Qz3AKDBIlt7vV0ZpNQNRKunciG0LnpgcQDPhWbJI_tr9bg"
 
 
 def test_get_player_matches() -> None:
-    my_puu_id = "xya6wbl5uMkzSdFUPWScfJ1VUUY1-Ip1Qz3AKDBIlt7vV0ZpNQNRKunciG0LnpgcQDPhWbJI_tr9bg"
+    """Test case for Riot Ingest GetPlayerMatches RPC.
+
+    Retrieves player match history, asserts response properties.
+
+    Assertions:
+    - Correct number of matches.
+    - Matching player PUUID.
+    - Queue ID of the first match.
+    - Match ID and start time format for each match.
+
+    Raises:
+        AssertionError on failure.
+    """
+    my_puuid = "xya6wbl5uMkzSdFUPWScfJ1VUUY1-Ip1Qz3AKDBIlt7vV0ZpNQNRKunciG0LnpgcQDPhWbJI_tr9bg"
     with grpc.insecure_channel(f"riot-ingest:{ os.environ['RIOT_INGEST_SERVICE_PORT' ]}") as channel:
         stub = riot_ingest_pb2_grpc.RiotIngestServiceStub(channel)
-        response = stub.GetPlayerMatches(riot_ingest_pb2.GetPlayerMatchesRequest(puu_id=my_puu_id))
+        response = stub.GetPlayerMatches(riot_ingest_pb2.GetPlayerMatchesRequest(puuid=my_puuid))
 
         assert len(response.history) == 2
-        assert response.puu_id == my_puu_id
+        assert response.puuid == my_puuid
         assert response.history[0].queue_id == "COMPETITIVE"
 
         match_id_pattern = r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
@@ -107,12 +154,22 @@ channel_opt = [
 
 
 def test_get_leaderboard_data() -> None:
+    """Test case for Riot Ingest GetLeaderboardData RPC.
+
+    Retrieves leaderboard data for a specific Act, asserts response properties.
+
+    Assertions:
+    - Act ID and Shard correctness.
+    - Total players count.
+    - Player-specific properties for the first three players.
+
+    Raises:
+        AssertionError on failure.
+    """
     my_act_id = "EPISODE_1_ACT_1"
     with grpc.insecure_channel(f"riot-ingest:{ os.environ['RIOT_INGEST_SERVICE_PORT' ]}") as channel:
         stub = riot_ingest_pb2_grpc.RiotIngestServiceStub(channel)
         response = stub.GetLeaderboardData(riot_ingest_pb2.GetLeaderboardDataRequest(act_id=my_act_id))
-        print(riot_ingest_pb2.ActId.Name(response.act_id))
-
         assert riot_ingest_pb2.ActId.Name(response.act_id) == my_act_id
         assert riot_ingest_pb2.Shard.Name(response.shard) == "LATAM"
 
@@ -123,21 +180,28 @@ def test_get_leaderboard_data() -> None:
 
 
 def test_get_content_data() -> None:
+    """Test case for Riot Ingest GetContentData RPC.
+
+    Establishes an insecure gRPC channel, requests content data, and asserts response properties.
+
+    Assertions:
+    - Character info for specific indices.
+    - Game modes info for specific indices.
+    - Acts info for specific indices.
+
+    Raises:
+        AssertionError on failure.
+    """
     with grpc.insecure_channel(f"riot-ingest:{os.environ['RIOT_INGEST_SERVICE_PORT']}", options=channel_opt) as channel:
         stub = riot_ingest_pb2_grpc.RiotIngestServiceStub(channel)
 
         response = stub.GetContentData(riot_ingest_pb2.GetContentDataRequest())
-        print((response.characters_info[0].player_id), flush=True)
-        print("hahaaa", flush=True)
 
         assert response.characters_info[1].localized_names.turkish == "FADE"
         assert response.characters_info[0].player_id == "E370FA57-4757-3604-3648-499E1F642D3F"
         assert response.characters_info[2].asset_name == "Default__Breach_PrimaryAsset_C"
         assert response.characters_info[3].name == "Deadlock"
-
         assert response.characters_info[4].name == "Raze"
-
         assert response.game_modes_info[0].asset_path == "/Game/GameModes/Bomb/BombGameMode.BombGameMode_C"
         assert response.game_modes_info[1].asset_name == "DeathmatchGameMode"
-
         assert response.acts_info[1].parent_id == "fcf2c8f4-4324-e50b-2e23-718e4a3ab046"

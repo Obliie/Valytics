@@ -35,7 +35,7 @@ message GetAccountByRiotIDRequest {
 message GetAccountByRiotIDResponse {
     string game_name = 1;
     string tag_line = 2;
-    string puu_id = 3;
+    string puuid = 3;
 }
 
 /*
@@ -43,7 +43,7 @@ message GetAccountByRiotIDResponse {
  * Uses puuid to obtain a list which contains other lists that specify a matchid, queueid, and gameStartTimeMillis.
  */
 message GetPlayerMatchesRequest {
-    string puu_id = 1;
+    string puuid = 1;
 }
 
 message PlayersMatches {
@@ -53,7 +53,7 @@ message PlayersMatches {
 }
 
 message GetPlayerMatchesResponse {
-    string puu_id = 1;
+    string puuid = 1;
     repeated PlayersMatches history = 2;
 }
 
@@ -175,7 +175,7 @@ message GetLeaderboardDataRequest {
     ActId act_id = 1;
 }
 message PlayerDto {
-    string puu_id = 1;
+    string puuid = 1;
     string game_name = 2;
     string tag_line = 3;
     uint64 leaderboard_rank = 4;
