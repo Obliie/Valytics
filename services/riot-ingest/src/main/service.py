@@ -4,6 +4,7 @@ This module implements the Riot Ingest service, responsible for processing and i
 from the Riot Games API. It configures the protofile schema to provide game statistics and
 other relevant information to the application.
 
+
 Usage:
 - Periodically fetches data from the Riot Games API to update the internal database.
 - Allows the application to retrieve game statistics through gRPC calls.
@@ -32,14 +33,10 @@ RIOT_API_URL = "http://mockserver:1080"
 RIOT_API_KEY_FILE = "/run/secrets/riot-api-key"
 
 MATCH_DATA_ENDPOINT = f"{RIOT_API_URL}/val/match/v1/matches/{{match_id}}"
-ACCOUNT_DATA_ENDPOINT = (
-    f"{RIOT_API_URL}/account/v1/accounts/by-riot-id/{{game_name}}/{{tag_line}}"
-)
-MATCH_LIST_DATA_ENDPOINT = f"{RIOT_API_URL}/val/match/v1/matchlists/by-puuid/{{puu_id}}"
+ACCOUNT_DATA_ENDPOINT = f"{RIOT_API_URL}/account/v1/accounts/by-riot-id/{{game_name}}/{{tag_line}}"
+MATCH_LIST_DATA_ENDPOINT = f"{RIOT_API_URL}/val/match/v1/matchlists/by-puuid/{{puuid}}"
 CONTENT_DATA_ENDPOINT = f"{RIOT_API_URL}/val/content/v1/contents"
-LEADERBOARD_DATA_ENDPOINT = (
-    f"{RIOT_API_URL}/val/ranked/v1/leaderboards/by-act/{{act_id}}"
-)
+LEADERBOARD_DATA_ENDPOINT = f"{RIOT_API_URL}/val/ranked/v1/leaderboards/by-act/{{act_id}}"
 
 
 class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
@@ -65,7 +62,15 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         request: riot_ingest_pb2.GetMatchDataRequest,
         context: grpc.ServicerContext,
     ) -> riot_ingest_pb2.GetMatchDataResponse:
-        """Fetches match data from Riot Games API and returns the retrieved data."""
+        """Fetches match data from Riot Games API and returns the retrieved data.
+
+        Args:
+            request (riot_ingest_pb2.GetMatchDataRequest): gRPC request containing the match ID.
+            context (grpc.ServicerContext): gRPC service context.
+
+        Returns:
+            riot_ingest_pb2.GetMatchDataResponse: gRPC response containing the retrieved match data.
+        """
         url = MATCH_DATA_ENDPOINT.format(match_id=request.match_id)
         headers = {"X-Riot-Token": self.riot_api_key}
         match_data = request_get(url, context, headers)
@@ -88,9 +93,15 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
 
         return response_message
 
-    def _populate_player_info(
-        self, match_data: Dict[str, Any]
-    ) -> List[match_pb2.PlayerInformation]:
+    def _populate_player_info(self, match_data: Dict[str, Any]) -> List[match_pb2.PlayerInformation]:
+        """Populates a list of protobuf messages for player information based on the provided match data.
+
+        Args:
+            match_data (Dict[str, Any]): Dictionary containing match data.
+
+        Returns:
+            List[match_pb2.PlayerInformation]: List of protobuf messages for player information.
+        """
         players = []
         players_list = match_data["players"]
 
@@ -106,7 +117,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
 
             player_proto = match_pb2.PlayerInformation()
             player_proto.stats.CopyFrom(stat_proto)
-            player_proto.puu_id = player["puuid"]
+            player_proto.puuid = player["puuid"]
 
             if "gameName" in player and player["gameName"]:
                 player_proto.game_name = player["gameName"]
@@ -123,9 +134,15 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
             players.append(player_proto)
         return players
 
-    def _populate_match_info(
-        self, match_data: Dict[str, Any]
-    ) -> match_pb2.MatchInformation:
+    def _populate_match_info(self, match_data: Dict[str, Any]) -> match_pb2.MatchInformation:
+        """Populates a protobuf message for match information based on the provided match data.
+
+        Args:
+            match_data (Dict[str, Any]): Dictionary containing match data.
+
+        Returns:
+            match_pb2.MatchInformation: Protobuf message for match information.
+        """
         match_info_list = match_data["matchInfo"]
         match_info_proto = match_pb2.MatchInformation()
         match_info_proto.match_id = match_info_list["matchId"]
@@ -141,9 +158,15 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         match_info_proto.season_id = match_info_list["seasonId"]
         return match_info_proto
 
-    def _populate_teams_info(
-        self, match_data: Dict[str, List[Dict[str, Any]]]
-    ) -> List[match_pb2.TeamsInformation]:
+    def _populate_teams_info(self, match_data: Dict[str, Any]) -> List[match_pb2.TeamsInformation]:
+        """Populates a list of protobuf messages for team information based on the provided match data.
+
+        Args:
+            match_data(Dict[str, Any]): The dictionary containing match data.
+
+        Returns:
+            List[match_pb2.TeamsInformation]: List of protobuf messages for team information.
+        """
         return [
             match_pb2.TeamsInformation(
                 team_id=team["teamId"],
@@ -155,35 +178,62 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
             for team in match_data["teams"]
         ]
 
-    def _populate_location(
-        self, field_list: List[Any]
-    ) -> List[match_pb2.PlayerLocations]:
+    def _populate_location(self, field_list: List[Any]) -> List[match_pb2.PlayerLocations]:
+        """Populates a list of protobuf messages for player locations based on the provided field list.
+
+        Args:
+            field_list (List[Any]): The list containing player location information.
+
+        Returns:
+            List[match_pb2.PlayerLocations]: List of protobuf messages for player locations.
+        """
         return [
             match_pb2.PlayerLocations(
-                puu_id=field_item["puuid"],
+                puuid=field_item["puuid"],
                 view_radians=field_item["viewRadians"],
-                location=match_pb2.LocationInformation(
-                    x=field_item["location"]["x"], y=field_item["location"]["y"]
-                ),
+                location=match_pb2.LocationInformation(x=field_item["location"]["x"], y=field_item["location"]["y"]),
             )
             for field_item in field_list
         ]
 
-    def _field_location(self, round, rounds_proto, field_name):
-        if field_name in round and round[field_name]:
-            field_locations_proto_list = self._populate_location(round[field_name])
+    def _field_location(
+        self,
+        round_item: Dict[str, Any],
+        rounds_proto: match_pb2.RoundsInformation,
+        field_name: str,
+    ) -> None:
+        """Processes location field in a round and extends the corresponding field in protobuf message.
+
+        Args:
+            round_item (Dict[str, Any]): The dictionary containing round information.
+            rounds_proto (match_pb2.RoundsInformation): The protobuf message for round information.
+            field_name (str): The name of the field.
+
+        Returns:
+            None
+        """
+        if field_name in round_item and round_item[field_name]:
+            field_locations_proto_list = self._populate_location(round_item[field_name])
 
             if field_name == "plantPlayerLocations":
                 rounds_proto.plant_player_locations.extend(field_locations_proto_list)
             elif field_name == "defusePlayerLocations":
                 rounds_proto.defuse_player_locations.extend(field_locations_proto_list)
 
-    def _player_stats(self, stats_list):
+    def _player_stats(self, stats_list: List[Dict[str, Any]]) -> List[match_pb2.PlayerRoundStatsInformation]:
+        """Processes a list of player stats and returns a list of corresponding protobuf messages.
+
+        Args:
+            stats_list (List[Dict[str, Any]]): The list containing player stats.
+
+        Returns:
+            List[match_pb2.PlayerRoundStatsInformation]: List of protobuf messages for player stats.
+        """
         stats_proto_list = []
 
         for stats_item in stats_list:
             stats_proto = match_pb2.PlayerRoundStatsInformation()
-            stats_proto.puu_id = stats_item["puuid"]
+            stats_proto.puuid = stats_item["puuid"]
             stats_proto.score = stats_item["score"]
 
             damage_proto_list = []
@@ -247,54 +297,60 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
 
         return stats_proto_list
 
-    def _populate_round_info(self, match_data):
-        rounds = []
-        rounds_list = match_data["roundResults"]
+    def _populate_round_info(self, match_data: Dict[str, Any]) -> List[match_pb2.RoundsInformation]:
+        """Populates protobuf messages for round information based on the provided match data.
 
-        for round in rounds_list:
+        Args:
+            match_data (Dict[str, Any]): The dictionary containing match data.
+
+        Returns:
+            List[match_pb2.RoundsInformation]: List of populated protobuf messages for round information.
+        """
+        rounds_list = []
+
+        for round_item in match_data["roundResults"]:
             rounds_proto = match_pb2.RoundsInformation()
-            rounds_proto.round_num = round["roundNum"]
-            rounds_proto.round_result = round["roundResult"]
-            rounds_proto.round_ceremony = round["roundCeremony"]
-            rounds_proto.winning_team = round["winningTeam"]
-            if "bombPlanter" in round and round["bombPlanter"]:
-                rounds_proto.bomb_planter = round["bombPlanter"]
-            if "bombdefuser" in round and round["bombdefuser"]:
-                rounds_proto.bomb_defuser = round["bombdefuser"]
-            rounds_proto.plant_round_time = round["plantRoundTime"]
-            rounds_proto.round_result_code = round["roundResultCode"]
+            rounds_proto.round_num = round_item["roundNum"]
+            rounds_proto.round_result = round_item["roundResult"]
+            rounds_proto.round_ceremony = round_item["roundCeremony"]
+            rounds_proto.winning_team = round_item["winningTeam"]
+            if "bombPlanter" in round_item and round_item["bombPlanter"]:
+                rounds_proto.bomb_planter = round_item["bombPlanter"]
+            if "bombdefuser" in round_item and round_item["bombdefuser"]:
+                rounds_proto.bomb_defuser = round_item["bombdefuser"]
+            rounds_proto.plant_round_time = round_item["plantRoundTime"]
+            rounds_proto.round_result_code = round_item["roundResultCode"]
 
-            stats_list = round["playerStats"]
+            stats_list = round_item["playerStats"]
             stats_proto_list = self._player_stats(stats_list)
             rounds_proto.player_stats.extend(stats_proto_list)
 
-            self._field_location(round, rounds_proto, "plantPlayerLocations")
-            self._field_location(round, rounds_proto, "defusePlayerLocations")
+            self._field_location(round_item, rounds_proto, "plantPlayerLocations")
+            self._field_location(round_item, rounds_proto, "defusePlayerLocations")
 
             plant_coordinates_proto = match_pb2.LocationInformation()
-            plant_coordinates_proto.x = round["plantLocation"]["x"]
-            plant_coordinates_proto.y = round["plantLocation"]["y"]
+            plant_coordinates_proto.x = round_item["plantLocation"]["x"]
+            plant_coordinates_proto.y = round_item["plantLocation"]["y"]
             rounds_proto.plant_location.CopyFrom(plant_coordinates_proto)
 
             defuse_coordinates_proto = match_pb2.LocationInformation()
-            defuse_coordinates_proto.x = round["defuseLocation"]["x"]
-            defuse_coordinates_proto.y = round["defuseLocation"]["y"]
+            defuse_coordinates_proto.x = round_item["defuseLocation"]["x"]
+            defuse_coordinates_proto.y = round_item["defuseLocation"]["y"]
             rounds_proto.defuse_location.CopyFrom(defuse_coordinates_proto)
-            rounds_proto.plant_site = round["plantSite"]
-            rounds_proto.defuse_round_time = round["defuseRoundTime"]
-            rounds_proto.round_result_code = round["roundResultCode"]
+            rounds_proto.plant_site = round_item["plantSite"]
+            rounds_proto.defuse_round_time = round_item["defuseRoundTime"]
+            rounds_proto.round_result_code = round_item["roundResultCode"]
 
-            rounds.append(rounds_proto)
+            rounds_list.append(rounds_proto)
 
-        return rounds
+        return rounds_list
 
     def GetAccountByRiotID(
         self,
         request: riot_ingest_pb2.GetAccountByRiotIDRequest,
         context: grpc.ServicerContext,
     ) -> riot_ingest_pb2.GetAccountByRiotIDResponse:
-        """
-        Fetch account data from Riot Games API and return the retrieved data.
+        """Fetch account data from Riot Games API and return the retrieved data.
 
         Args:
             request (riot_ingest_pb2.GetAccountByRiotIDRequest): The request containing game_name and tag_line.
@@ -303,9 +359,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         Returns:
             riot_ingest_pb2.GetAccountByRiotIDResponse: The response containing account information.
         """
-        url = ACCOUNT_DATA_ENDPOINT.format(
-            game_name=request.game_name, tag_line=request.tag_line
-        )
+        url = ACCOUNT_DATA_ENDPOINT.format(game_name=request.game_name, tag_line=request.tag_line)
 
         headers = {"X-Riot-Token": self.riot_api_key}
         account_data = request_get(url, context, headers)
@@ -316,7 +370,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         response_message = riot_ingest_pb2.GetAccountByRiotIDResponse()
         response_message.game_name = account_data["gameName"]
         response_message.tag_line = account_data["tagLine"]
-        response_message.puu_id = account_data["puuid"]
+        response_message.puuid = account_data["puuid"]
         return response_message
 
     def GetPlayerMatches(
@@ -338,7 +392,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
             grpc.RpcError: An error occurred during the gRPC call.
 
         """
-        url = MATCH_LIST_DATA_ENDPOINT.format(puu_id=request.puu_id)
+        url = MATCH_LIST_DATA_ENDPOINT.format(puuid=request.puuid)
         headers = {"X-Riot-Token": self.riot_api_key}
         match_data = request_get(url, context, headers)
 
@@ -346,7 +400,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
             context.abort(context.code(), context.details())
 
         response_message = riot_ingest_pb2.GetPlayerMatchesResponse()
-        response_message.puu_id = match_data["puuid"]
+        response_message.puuid = match_data["puuid"]
         response_message.history.extend(
             [
                 riot_ingest_pb2.PlayersMatches(
@@ -380,127 +434,127 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         if context_data is None:
             context.abort(context.code(), context.details())
 
-        def set_lang(
-            character: Dict[str, str], response: riot_ingest_pb2.Languages
-        ) -> riot_ingest_pb2.Languages:
-            response.arabic = character["ar-AE"]
-            response.german = character["de-DE"]
-            response.english = character["en-US"]
-            response.spanish_spain = character["es-ES"]
-            response.spanish_mexico = character["es-MX"]
-            response.french = character["fr-FR"]
-            response.indonesian = character["id-ID"]
-            response.italian = character["it-IT"]
-            response.japanese = character["ja-JP"]
-            response.korean = character["ko-KR"]
-            response.polish = character["pl-PL"]
-            response.portuguese_brazil = character["pt-BR"]
-            response.russian = character["ru-RU"]
-            response.thai = character["th-TH"]
-            response.turkish = character["tr-TR"]
-            response.vietnamese = character["vi-VN"]
-            response.chinese_simplified = character["zh-CN"]
-            response.chinese_traditional = character["zh-TW"]
-            return response
-
-        def populate_proto_response(
-            context_data: Dict[str, Any], input_list: str
-        ) -> List[riot_ingest_pb2.GameInformation]:
-            """Populates a protobuf response with data from the input list.
-
-            Args:
-                context_data (Dict[str, Any]): Dictionary containing context data.
-                input_list (str): Name of the input list.
-
-            Returns:
-                List[riot_ingest_pb2.GameInformation]: List of populated protobuf messages.
-            """
-            # Define a dictionary to map input list names to protobuf types
-            protobuf_types = {
-                "gameModes": riot_ingest_pb2.GameModesInformation,
-                "acts": riot_ingest_pb2.ActsInformation,
-            }
-
-            characters = []
-
-            for character in context_data[input_list]:
-                protobuf_type = protobuf_types.get(
-                    input_list, riot_ingest_pb2.GameInformation
-                )
-                character_proto = protobuf_type()
-
-                # Common fields
-                character_proto.name = character["name"]
-                character_proto.player_id = character["id"]
-
-                # Set the specific fields based on the input list
-                if input_list == "gameModes":
-                    character_proto.asset_path = character["assetPath"]
-                    character_proto.asset_name = character["assetName"]
-                elif input_list == "acts":
-                    character_proto.parent_id = character["parentId"]
-                    character_proto.type = character["type"]
-                    character_proto.is_active = str(character["isActive"])
-                else:
-                    character_proto.asset_name = character["assetName"]
-
-                # Set localized_names if character["name"] is not empty
-                if character["name"]:
-                    response_languages = set_lang(
-                        character["localizedNames"],
-                        response=riot_ingest_pb2.Languages(),
-                    )
-                    character_proto.localized_names.CopyFrom(response_languages)
-
-                characters.append(character_proto)
-            return characters
-
         response_message = riot_ingest_pb2.GetContentDataResponse()
-        characters = populate_proto_response(context_data, "characters")
+        characters = self._populate_proto_response(context_data, "characters")
         response_message.characters_info.extend(characters)
 
-        maps = populate_proto_response(context_data, "maps")
+        maps = self._populate_proto_response(context_data, "maps")
         response_message.maps_info.extend(maps)
 
-        chromas = populate_proto_response(context_data, "chromas")
+        chromas = self._populate_proto_response(context_data, "chromas")
         response_message.chromas_info.extend(chromas)
 
-        skins = populate_proto_response(context_data, "skins")
+        skins = self._populate_proto_response(context_data, "skins")
         response_message.skins_info.extend(skins)
 
-        skin_levels = populate_proto_response(context_data, "skinLevels")
+        skin_levels = self._populate_proto_response(context_data, "skinLevels")
         response_message.skin_levels_info.extend(skin_levels)
 
-        equips = populate_proto_response(context_data, "equips")
+        equips = self._populate_proto_response(context_data, "equips")
         response_message.skin_levels_info.extend(equips)
 
-        game_modes = populate_proto_response(context_data, "gameModes")
+        game_modes = self._populate_proto_response(context_data, "gameModes")
         response_message.game_modes_info.extend(game_modes)
 
-        sprays = populate_proto_response(context_data, "sprays")
+        sprays = self._populate_proto_response(context_data, "sprays")
         response_message.sprays_info.extend(sprays)
 
-        spray_levels = populate_proto_response(context_data, "sprayLevels")
+        spray_levels = self._populate_proto_response(context_data, "sprayLevels")
         response_message.spray_levels_info.extend(spray_levels)
 
-        charms = populate_proto_response(context_data, "charms")
+        charms = self._populate_proto_response(context_data, "charms")
         response_message.charms_info.extend(charms)
 
-        charm_levels = populate_proto_response(context_data, "charmLevels")
+        charm_levels = self._populate_proto_response(context_data, "charmLevels")
         response_message.charm_levels_info.extend(charm_levels)
 
-        player_cards = populate_proto_response(context_data, "playerCards")
+        player_cards = self._populate_proto_response(context_data, "playerCards")
         response_message.player_cards_info.extend(player_cards)
 
-        ceremonies = populate_proto_response(context_data, "ceremonies")
+        ceremonies = self._populate_proto_response(context_data, "ceremonies")
         response_message.ceremonies_info.extend(ceremonies)
 
-        player_titles = populate_proto_response(context_data, "playerTitles")
+        player_titles = self._populate_proto_response(context_data, "playerTitles")
         response_message.player_titles_info.extend(player_titles)
 
-        acts = populate_proto_response(context_data, "acts")
+        acts = self._populate_proto_response(context_data, "acts")
         response_message.acts_info.extend(acts)
         return response_message
+
+    def _set_lang(self, character: Dict[str, str], response: riot_ingest_pb2.Languages) -> riot_ingest_pb2.Languages:
+        """Sets language values in the provided `response` proto based on the given `character` dictionary.
+
+        Args:
+            character (Dict[str, str]): A dictionary containing language codes as keys and corresponding values.
+            response (riot_ingest_pb2.Languages): A protobuf message representing language settings.
+
+        Returns:
+            riot_ingest_pb2.Languages: The modified `response` proto with language values set.
+        """
+        response.arabic = character["ar-AE"]
+        response.german = character["de-DE"]
+        response.english = character["en-US"]
+        response.spanish_spain = character["es-ES"]
+        response.spanish_mexico = character["es-MX"]
+        response.french = character["fr-FR"]
+        response.indonesian = character["id-ID"]
+        response.italian = character["it-IT"]
+        response.japanese = character["ja-JP"]
+        response.korean = character["ko-KR"]
+        response.polish = character["pl-PL"]
+        response.portuguese_brazil = character["pt-BR"]
+        response.russian = character["ru-RU"]
+        response.thai = character["th-TH"]
+        response.turkish = character["tr-TR"]
+        response.vietnamese = character["vi-VN"]
+        response.chinese_simplified = character["zh-CN"]
+        response.chinese_traditional = character["zh-TW"]
+        return response
+
+    def _populate_proto_response(
+        self, context_data: Dict[str, Any], input_list: str
+    ) -> List[riot_ingest_pb2.GameInformation]:
+        """Populates a protobuf response with data from the input list.
+
+        Args:
+            context_data (Dict[str, Any]): Dictionary containing context data.
+            input_list (str): Name of the input list.
+
+        Returns:
+            List[riot_ingest_pb2.GameInformation]: List of populated protobuf messages.
+        """
+        protobuf_types = {
+            "gameModes": riot_ingest_pb2.GameModesInformation,
+            "acts": riot_ingest_pb2.ActsInformation,
+        }
+
+        characters = []
+
+        for character in context_data[input_list]:
+            protobuf_type = protobuf_types.get(input_list, riot_ingest_pb2.GameInformation)
+            character_proto = protobuf_type()
+            character_proto.name = character["name"]
+            character_proto.player_id = character["id"]
+
+            if input_list == "gameModes":
+                character_proto.asset_path = character["assetPath"]
+                character_proto.asset_name = character["assetName"]
+            elif input_list == "acts":
+                character_proto.parent_id = character["parentId"]
+                character_proto.type = character["type"]
+                character_proto.is_active = str(character["isActive"])
+            else:
+                character_proto.asset_name = character["assetName"]
+
+            if character["name"]:
+                response_languages = self._set_lang(
+                    character["localizedNames"],
+                    response=riot_ingest_pb2.Languages(),
+                )
+                character_proto.localized_names.CopyFrom(response_languages)
+
+            characters.append(character_proto)
+        return characters
 
     def GetLeaderboardData(
         self,
@@ -516,9 +570,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         Returns:
             riot_ingest_pb2.GetLeaderboardDataResponse: gRPC response containing the leaderboard data.
         """
-        url = LEADERBOARD_DATA_ENDPOINT.format(
-            act_id=(riot_ingest_pb2.ActId.Name(request.act_id))
-        )
+        url = LEADERBOARD_DATA_ENDPOINT.format(act_id=(riot_ingest_pb2.ActId.Name(request.act_id)))
         headers = {"X-Riot-Token": self.riot_api_key}
         leaderboard_data = request_get(url, context, headers)
 
@@ -532,7 +584,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         response_message.players.extend(
             [
                 riot_ingest_pb2.PlayerDto(
-                    puu_id=player["puuid"],
+                    puuid=player["puuid"],
                     game_name=player["gameName"],
                     tag_line=player["tagLine"],
                     leaderboard_rank=player["leaderboardRank"],
@@ -556,9 +608,7 @@ def serve() -> None:
         None
     """
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    riot_ingest_pb2_grpc.add_RiotIngestServiceServicer_to_server(
-        RiotIngestServicer(), server
-    )
+    riot_ingest_pb2_grpc.add_RiotIngestServiceServicer_to_server(RiotIngestServicer(), server)
     server.add_insecure_port(f"[::]:{ os.environ['RIOT_INGEST_SERVICE_PORT'] }")
     log_and_flush(logging.INFO, "Starting Riot Ingest service...")
     server.start()
