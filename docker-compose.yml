@@ -47,6 +47,20 @@ services:
       - backend
     networks:
       - valyticsmesh
+  ###
+  # Match queue
+  ###
+  match-queue:
+    build:
+      context: ./services/match-queue
+      dockerfile: Dockerfile
+    ports:
+      - '${RABBITMQ_DEFAULT_PORT}:${RABBITMQ_DEFAULT_PORT}'
+      - '${RABBITMQ_MANAGEMENT_PLUGIN_PORT}:${RABBITMQ_MANAGEMENT_PLUGIN_PORT}'
+    profiles:
+      - backend
+    networks:
+      - valyticsmesh
 
   ###
   # Databases
