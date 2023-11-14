@@ -44,7 +44,7 @@ LEADERBOARD_DATA_ENDPOINT = (
 )
 
 
-class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):3
+class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
     """gRPC Service for Riot Ingest.
 
     The RiotIngestServicer class handles incoming requests and provides game statistics

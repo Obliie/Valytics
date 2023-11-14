@@ -188,6 +188,8 @@ configs:
     file: ./config.yaml
 
 secrets:
+  riot-api-key:
+    file: ./secrets/riot_api_key
   mongo-root-username:
     file: ./secrets/mongo_root_username
   mongo-root-password:

@@ -1,0 +1,6 @@
+Services:
+  Match:
+    Database:
+      Host: valytics-ranked-match-db-1
+      Port: 27001
+      Name: match

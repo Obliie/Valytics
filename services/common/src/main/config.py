@@ -1,6 +1,7 @@
 import yaml
 import os
 
+
 CONFIG_PATH = "/service-config"
 SECRETS_PATH = "/run/secrets/service-secrets"
 
