@@ -54,14 +54,11 @@ services:
     build:
       context: ./services/match-queue
       dockerfile: Dockerfile
-      args:
-        RABBITMQ_DEFAULT_PORT: ${RABBITMQ_DEFAULT_PORT}
-        RABBITMQ_MANAGEMENT_PLUGIN_PORT: ${RABBITMQ_MANAGEMENT_PLUGIN_PORT}
     env_file:
       - .env
     ports:
-      - '${RABBITMQ_DEFAULT_PORT}:5672'
-      - '${RABBITMQ_MANAGEMENT_PLUGIN_PORT}:15672'
+      - '${RABBITMQ_DEFAULT_PORT}:${RABBITMQ_DEFAULT_PORT}'
+      - '${RABBITMQ_MANAGEMENT_PLUGIN_PORT}:${RABBITMQ_MANAGEMENT_PLUGIN_PORT}'
     profiles:
       - backend
     networks:
