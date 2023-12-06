@@ -1,0 +1,8 @@
+services:
+  ranked-match-db:
+    ports:
+      - ${HOST}:${RANKED_MATCH_DB_PORT}:${RANKED_MATCH_DB_PORT}
+
+  api-gateway:
+    ports:
+      - ${HOST}:${ENVOY_EDGE_GATEWAY_ADMIN_PORT}:9090

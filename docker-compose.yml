@@ -50,20 +50,15 @@ services:
     configs:
       - service-config
     secrets:
-      - mongo-username
-      - mongo-password
+      - mongo-root-username
+      - mongo-root-password
 
   ###
   # Databases
   ###
   ranked-match-db:
-    image: mongo:5.0.19
-    ports:
-      - ${RANKED_MATCH_DB_PORT}:27001
+    image: mongo:7.0.4
     environment:
-      # old code
-      #- MONGO_INITDB_ROOT_USERNAME=${RANKED_MATCH_DB_USER}
-      #- MONGO_INITDB_ROOT_PASSWORD=${RANKED_MATCH_DB_PASS}
       MONGO_INITDB_ROOT_USERNAME_FILE: /run/secrets/mongo-root-username
       MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongo-root-password
       MONGO_INITDB_DATABASE: admin
@@ -71,7 +66,7 @@ services:
       MONGO_PASSWORD_FILE: /run/secrets/mongo-password
       MONGO_DATABASE: ranked-match
 
-    command: --port ${RANKED_MATCH_DB_PORT} # need this?
+    command: mongod --port ${RANKED_MATCH_DB_PORT}
 
     profiles:
       - backend
@@ -143,7 +138,6 @@ services:
       - backend
     ports:
       - ${HOST}:${ENVOY_EDGE_GATEWAY_PORT}:8080
-      - ${HOST}:${ENVOY_EDGE_GATEWAY_ADMIN_PORT}:9090
     networks:
       - valyticsmesh
 

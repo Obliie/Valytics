@@ -1,14 +1,16 @@
-from concurrent import futures
 import logging
 import os
-import grpc
-from protobufs.services.v1 import match_service_pb2, match_service_pb2_grpc
-from config import Config
-from service_common.service_logging import init_logging, log_and_flush
-from pymongo import MongoClient
+from concurrent import futures
 
-DATABASE_USERNAME_FILE = "/run/secrets/mongo-username"
-DATABASE_PASSWORD_FILE = "/run/secrets/mongo-password"
+import grpc
+from config import Config
+from pymongo import MongoClient
+from service_common.service_logging import init_logging, log_and_flush
+
+from protobufs.services.v1 import match_service_pb2, match_service_pb2_grpc
+
+DATABASE_USERNAME_FILE = "/run/secrets/mongo-root-username"
+DATABASE_PASSWORD_FILE = "/run/secrets/mongo-root-password"
 
 
 class MatchServicer(match_service_pb2_grpc.MatchService):
