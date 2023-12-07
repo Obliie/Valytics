@@ -2,6 +2,13 @@ syntax = "proto3";
 
 package protobufs.common.v1;
 
+message Match {
+    MatchInformation matches_info = 1;
+    repeated PlayerInformation players_info = 2;
+    repeated TeamsInformation teams_info = 3;
+    repeated RoundsInformation rounds_info = 4;
+}
+
 message MatchInformation{
     string match_id = 1;
     string map_id  = 2;

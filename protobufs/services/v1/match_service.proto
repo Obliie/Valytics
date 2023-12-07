@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package protobufs.services.v1;
-
-// Match service
-service MatchService {
-
-}
