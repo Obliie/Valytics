@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package protobufs.common.v1;
 
-message MatchInformation{
+message MatchData {
     string match_id = 1;
     string map_id  = 2;
     uint64 game_length = 3;
@@ -16,7 +16,7 @@ message MatchInformation{
     string season_id = 11;
 }
 
-message PlayerStats{
+message PlayerStats {
     uint64 score = 1;
     uint64 rounds_played = 2;
     uint64 kills = 3;
@@ -25,7 +25,7 @@ message PlayerStats{
     uint64 play_time = 6;
 }
 
-message PlayerInformation {
+message PlayerData {
     string puuid = 1;
     string game_name = 2;
     string tag_line = 3;
@@ -38,7 +38,7 @@ message PlayerInformation {
     string player_title = 10;
 }
 
-message TeamsInformation {
+message TeamData {
     string team_id = 1;
     bool won = 2;
     uint64 rounds_played = 3;
@@ -46,35 +46,35 @@ message TeamsInformation {
     uint64 num_points = 5;
 }
 
-message LocationInformation{
+message LocationData {
     int64 x = 1;
     int64 y = 2;
 }
-message PlayerLocations{
+message PlayerLocations {
     string puuid = 1;
     double view_radians = 2;  // Changed to double
-    LocationInformation location = 3;
+    LocationData location = 3;
 }
 
-message FinishingDamageInformation{
+message FinishingDamageData {
     string damage_type = 1;
     string damage_item = 2;
     bool is_secondary_fire_mode = 3;  // Changed to bool
 }
 
-message KillsInformation{
+message KillData {
     uint64 game_start = 1;  // Changed to uint64
     uint64 round_start = 2;  // Changed to uint64
     string killer = 3;  // PUUID
     string victim = 4;  // PUUID
-    LocationInformation victim_location = 5;
+    LocationData victim_location = 5;
     repeated string assistants = 6;  // List of PUUIDs
     repeated PlayerLocations player_locations = 7;
-    FinishingDamageInformation finishing_damage = 8;
+    FinishingDamageData finishing_damage = 8;
 
 }
 
-message EconomyInformation {
+message EconomyData {
     uint64 loadout_value = 1; // Changed to uint64
     string weapon = 2;
     string armor = 3;
@@ -82,7 +82,7 @@ message EconomyInformation {
     uint64 spent = 5; // Changed to uint64
 }
 
-message DamageInformation{
+message DamageData {
     string receiver = 1;  // PUUID
     uint64 damage = 2;
     uint64 leg_shots = 3;
@@ -90,15 +90,15 @@ message DamageInformation{
     uint64 head_shots = 5;
 
 }
-message PlayerRoundStatsInformation{
+message PlayerRoundStatsData {
     string puuid = 1;
-    repeated KillsInformation kills = 2;
-    repeated DamageInformation damage = 3;
+    repeated KillData kills = 2;
+    repeated DamageData damage = 3;
     uint64 score = 4;  // Changed to uint64
-    EconomyInformation economy = 5;
+    EconomyData economy = 5;
 
 }
-message RoundsInformation{
+message RoundsData {
     uint64 round_num = 1;
     string round_result = 2;
     string round_ceremony = 3;
@@ -107,11 +107,11 @@ message RoundsInformation{
     string bomb_defuser = 6;
     uint64 plant_round_time = 7;
     repeated PlayerLocations plant_player_locations = 8;
-    LocationInformation plant_location = 9;
+    LocationData plant_location = 9;
     string plant_site = 10;
     uint64 defuse_round_time = 11;
     repeated PlayerLocations defuse_player_locations = 12;
-    LocationInformation defuse_location = 13;
-    repeated PlayerRoundStatsInformation player_stats = 14;
+    LocationData defuse_location = 13;
+    repeated PlayerRoundStatsData player_stats = 14;
     string round_result_code = 15;
 }

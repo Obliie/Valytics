@@ -3,19 +3,14 @@
 This module provides utility functions for making HTTP requests and converting
 HTTP status codes to gRPC status codes.
 
-Usage:
-- Used by various services to interact with external APIs.
-
 Dependencies:
 - Requires the 'grpc' and 'requests' libraries.
-
-Note:
-Ensure proper error handling and logging for production use.
 """
+
+from typing import Dict, Optional
 
 import grpc
 import requests
-from typing import Dict, Optional
 
 HTTP_TO_GRPC_STATUS = {
     200: grpc.StatusCode.OK,
