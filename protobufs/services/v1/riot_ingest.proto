@@ -191,8 +191,5 @@ message GetMatchDataRequest {
 }
 
 message GetMatchDataResponse {
-    common.v1.MatchData matches_info = 1;
-    repeated common.v1.PlayerData players_info = 2;
-    repeated common.v1.TeamData teams_info = 3;
-    repeated common.v1.RoundsData rounds_info = 4;
+    common.v1.Match match = 1;
 }

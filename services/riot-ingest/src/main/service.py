@@ -71,16 +71,16 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
 
         response_message = riot_ingest_pb2.GetMatchDataResponse()
         match_info_proto = self._populate_match_info(match_data)
-        response_message.matches_info.CopyFrom(match_info_proto)
+        response_message.match.matches_info.CopyFrom(match_info_proto)
 
         players_proto = self._populate_player_info(match_data)
-        response_message.players_info.extend(players_proto)
+        response_message.match.players_info.extend(players_proto)
 
         teams_proto = self._populate_teams_info(match_data)
-        response_message.teams_info.extend(teams_proto)
+        response_message.match.teams_info.extend(teams_proto)
 
         rounds_proto = self._populate_round_info(match_data)
-        response_message.rounds_info.extend(rounds_proto)
+        response_message.match.rounds_info.extend(rounds_proto)
 
         return response_message
 
