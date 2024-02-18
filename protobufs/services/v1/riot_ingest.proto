@@ -180,7 +180,6 @@ message PlayerDto {
     uint64 number_of_wins = 6;
 }
 message GetLeaderboardDataResponse {
-    ActId act_id = 1;
     Shard shard = 2;
     uint64 total_players = 3;
     repeated PlayerDto players = 4;
