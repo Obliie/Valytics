@@ -581,7 +581,6 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
             context.abort(context.code(), context.details())
 
         response_message = riot_ingest_pb2.GetLeaderboardDataResponse()
-        response_message.act_id = leaderboard_data["actId"]
         response_message.shard = leaderboard_data["shard"]
         response_message.total_players = leaderboard_data["totalPlayers"]
         response_message.players.extend(

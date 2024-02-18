@@ -158,7 +158,6 @@ def test_get_leaderboard_data() -> None:
         response = stub.GetLeaderboardData(
             riot_ingest_pb2.GetLeaderboardDataRequest(act_id=my_act_id)
         )
-        assert riot_ingest_pb2.ActId.Name(response.act_id) == my_act_id
         assert riot_ingest_pb2.Shard.Name(response.shard) == "LATAM"
 
         assert response.total_players == 312
