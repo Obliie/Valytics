@@ -1,7 +1,7 @@
 FROM mockserver/mockserver:latest
 
 # Set the environment variable to disable MockServer logging
-ENV MOCKSERVER_LOG_LEVEL=OFF
+ENV MOCKSERVER_LOG_LEVEL=WARN
 
 # Set the environment variable for MockServer initialization JSON path
 ENV MOCKSERVER_INITIALIZATION_JSON_PATH /etc/mockserver/mockserver-config.json

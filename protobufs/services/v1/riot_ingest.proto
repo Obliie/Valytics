@@ -33,9 +33,7 @@ message GetAccountByRiotIDRequest {
 }
 
 message GetAccountByRiotIDResponse {
-    string game_name = 1;
-    string tag_line = 2;
-    string puuid = 3;
+    string puuid = 1;
 }
 
 /*
@@ -53,8 +51,7 @@ message PlayersMatches {
 }
 
 message GetPlayerMatchesResponse {
-    string puuid = 1;
-    repeated PlayersMatches history = 2;
+    repeated PlayersMatches history = 1;
 }
 
 /*
@@ -85,14 +82,14 @@ message Languages {
     string chinese_traditional = 18;
   }
 
-message GameInformation{
+message GameData {
     string name = 1;
     Languages localized_names  = 2;
     string player_id = 3;
     string asset_name = 4;
 }
 
-message GameModesInformation{
+message GameModesData {
     string name = 1;
     Languages localized_names  = 2;
     string player_id = 3;
@@ -100,7 +97,7 @@ message GameModesInformation{
     string asset_path = 5;
 }
 
-message ActsInformation{
+message ActsData {
     string player_id = 1;
     string parent_id = 2;
     string type = 3;
@@ -110,22 +107,22 @@ message ActsInformation{
 }
 
 message GetContentDataResponse {
-    repeated GameInformation characters_info = 1;
-    repeated GameInformation maps_info = 2;
-    repeated GameInformation chromas_info = 3;
-    repeated GameInformation skins_info = 4;
-    repeated GameInformation skin_levels_info = 5;
-    repeated GameInformation equips_info = 6;
-    repeated GameModesInformation game_modes_info = 7;
-    repeated GameInformation sprays_info = 8;
-    repeated GameInformation spray_levels_info = 9;
-    repeated GameInformation charms_info = 10;
-    repeated GameInformation charm_levels_info = 11;
-    repeated GameInformation player_cards_info = 12;
-    repeated GameInformation player_titles_info = 13;
-    repeated ActsInformation acts_info = 14;
-    repeated GameInformation ceremonies_info = 15;
-    string version = 16;
+    string version = 1;
+    repeated GameData characters_info = 2;
+    repeated GameData maps_info = 3;
+    repeated GameData chromas_info = 4;
+    repeated GameData skins_info = 5;
+    repeated GameData skin_levels_info = 6;
+    repeated GameData equips_info = 7;
+    repeated GameModesData game_modes_info = 8;
+    repeated GameData sprays_info = 9;
+    repeated GameData spray_levels_info = 10;
+    repeated GameData charms_info = 11;
+    repeated GameData charm_levels_info = 12;
+    repeated GameData player_cards_info = 13;
+    repeated GameData player_titles_info = 14;
+    repeated ActsData acts_info = 15;
+    repeated GameData ceremonies_info = 16;
 }
 
 /*
@@ -194,5 +191,8 @@ message GetMatchDataRequest {
 }
 
 message GetMatchDataResponse {
-    common.v1.Match match = 1;
+    common.v1.MatchData matches_info = 1;
+    repeated common.v1.PlayerData players_info = 2;
+    repeated common.v1.TeamData teams_info = 3;
+    repeated common.v1.RoundsData rounds_info = 4;
 }
