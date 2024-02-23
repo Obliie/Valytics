@@ -11,6 +11,7 @@ repos:
       - id: destroyed-symlinks
       - id: detect-private-key
       - id: end-of-file-fixer
+        exclude: ^secrets/.*
       - id: mixed-line-ending
       - id: no-commit-to-branch
   - repo: https://github.com/bufbuild/buf

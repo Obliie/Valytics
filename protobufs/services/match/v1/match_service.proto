@@ -2,18 +2,18 @@ syntax = "proto3";
 package protobufs.services.match.v1;
 import "common/v1/match.proto";
 
-// Match service
+// A service to handle the persistence of "matches".
 service MatchService {
-    // Gets list of match id's in the db for a player based on game name and tag line
+    // Gets list of match id's for a player based on the game name and tag line
     rpc GetMatchList(GetMatchListRequest) returns (GetMatchListResponse) {}
 
-    // Gets data for a specific match based on the match id in the db
+    // Gets data for a specific match based on the match id
     rpc GetMatchData(GetMatchDataRequest) returns (GetMatchDataResponse) {}
 
-    // Adds match to db
+    // Adds a new match
     rpc StoreMatch(StoreMatchRequest) returns (StoreMatchResponse) {}
 
-    // Deletes match from db
+    // Deletes an existing match
     rpc DeleteMatch(DeleteMatchRequest) returns (DeleteMatchResponse) {}
 
 }
