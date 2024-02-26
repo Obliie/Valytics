@@ -4,7 +4,7 @@ import "common/v1/match.proto";
 
 // A service to handle the persistence of "matches".
 service MatchService {
-    // Gets list of match id's for a player based on the game name and tag line
+    // Gets list of match id's for a player based on the username and tag line
     rpc GetMatchList(GetMatchListRequest) returns (GetMatchListResponse) {}
 
     // Gets data for a specific match based on the match id
@@ -19,7 +19,7 @@ service MatchService {
 }
 
 message GetMatchListRequest {
-    string game_name = 1;
+    string user_name = 1;
     string tag_line = 2;
 }
 
