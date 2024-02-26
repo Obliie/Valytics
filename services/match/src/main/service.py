@@ -71,6 +71,25 @@ class MatchServicer(match_service_pb2_grpc.MatchService):
 
         resp = match_service_pb2.StoreMatchResponse()
         resp.success = result.acknowledged
+
+        return resp
+
+    def DeleteMatch(
+        self,
+        request: match_service_pb2.DeleteMatchRequest,
+        context: grpc.ServicerContext,
+    ) -> match_service_pb2.DeleteMatchResponse:
+        result = (
+            self.client[self.DATABASE_NAME]
+            .get_collection(MATCH_COLLECTION_NAME)
+            .delete_one(
+                {MATCH_ID_FIELD: request.match_id},
+            )
+        )
+
+        resp = match_service_pb2.DeleteMatchResponse()
+        resp.success = result.acknowledged
+
         return resp
 
 

@@ -35,3 +35,12 @@ def test_get_match_data() -> None:
         response = stub.GetMatchData(match_service_pb2.GetMatchDataRequest(match_id=test_match_id))
 
         assert response.match.matches_info.match_id == test_match_id
+
+
+def test_delete_problem() -> None:
+    with grpc.insecure_channel(f"match:{ os.environ['MATCH_SERVICE_PORT' ]}") as channel:
+        stub = match_service_pb2_grpc.MatchServiceStub(channel)
+
+        response = stub.DeleteMatch(match_service_pb2.DeleteMatchRequest(match_id=test_match_id))
+
+        assert response.success is True
