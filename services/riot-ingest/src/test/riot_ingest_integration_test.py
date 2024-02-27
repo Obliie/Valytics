@@ -35,6 +35,10 @@ def test_get_match_data() -> None:
             response.match.matches_info.match_id
             == "7b2412ad-d530-4bec-a112-01b171bb4959"
         )
+
+        assert len(response.match.players_info) == 10
+        assert len(response.match.teams_info) == 2
+        assert len(response.match.rounds_info) == 21
         assert response.match.matches_info.is_completed
         assert response.match.players_info[0].stats.score == 3461
         assert response.match.teams_info[1].rounds_won == 13
@@ -180,7 +184,7 @@ def test_get_content_data() -> None:
 
         assert response.characters_info[1].localized_names.turkish == "FADE"
         assert (
-            response.characters_info[0].player_id
+            response.characters_info[0].character_id
             == "E370FA57-4757-3604-3648-499E1F642D3F"
         )
         assert (

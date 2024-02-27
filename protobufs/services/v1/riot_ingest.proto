@@ -85,20 +85,20 @@ message Languages {
 message GameData {
     string name = 1;
     Languages localized_names  = 2;
-    string player_id = 3;
+    string character_id = 3;
     string asset_name = 4;
 }
 
 message GameModesData {
     string name = 1;
     Languages localized_names  = 2;
-    string player_id = 3;
+    string character_id = 3;
     string asset_name = 4;
     string asset_path = 5;
 }
 
 message ActsData {
-    string player_id = 1;
+    string character_id = 1;
     string parent_id = 2;
     string type = 3;
     string name = 4;

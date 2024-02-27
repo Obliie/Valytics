@@ -18,8 +18,11 @@ from protobufs.services.v1 import riot_ingest_pb2, riot_ingest_pb2_grpc
 from service_common.http_util import request_get
 from service_common.service_logging import init_logging, log_and_flush
 
+from dotenv import load_dotenv
 
-RIOT_API_URL = "http://mockserver:1080"
+load_dotenv()
+
+RIOT_API_URL = os.environ.get("RIOT_API_URL")
 RIOT_API_KEY_FILE = "/run/secrets/riot-api-key"
 
 MATCH_DATA_ENDPOINT = f"{RIOT_API_URL}/val/match/v1/matches/{{match_id}}"
@@ -235,8 +238,6 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
             stats_proto = match_pb2.PlayerRoundStatsData()
             stats_proto.puuid = stats_item["puuid"]
             stats_proto.score = stats_item["score"]
-
-            damage_proto_list = []
             damage_list = stats_item["damage"]
 
             for damage_item in damage_list:
@@ -246,9 +247,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
                 damage_proto.leg_shots = damage_item["legshots"]
                 damage_proto.body_shots = damage_item["bodyshots"]
                 damage_proto.head_shots = damage_item["headshots"]
-                damage_proto_list.append(damage_proto)
-
-            stats_proto.damage.extend(damage_proto_list)
+                stats_proto.damage.append(damage_proto)
 
             economy_proto = match_pb2.EconomyData()
             economy_list = stats_item["economy"]
@@ -535,7 +534,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
             protobuf_type = protobuf_types.get(input_list, riot_ingest_pb2.GameData)
             character_proto = protobuf_type()
             character_proto.name = character["name"]
-            character_proto.player_id = character["id"]
+            character_proto.character_id = character["id"]
 
             if input_list == "gameModes":
                 character_proto.asset_path = character["assetPath"]
