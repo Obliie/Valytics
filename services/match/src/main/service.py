@@ -3,7 +3,9 @@ import logging
 import os
 
 import grpc
-from protobufs.services.v1 import match_service_pb2, match_service_pb2_grpc
+from protobufs.common.v1 import match_pb2
+from protobufs.services.match.v1 import match_service_pb2, match_service_pb2_grpc
+
 from service_common.service_logging import init_logging, log_and_flush
 
 
