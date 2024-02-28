@@ -51,6 +51,15 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         with open(RIOT_API_KEY_FILE) as riot_key_file:
             self.riot_api_key = riot_key_file.read()
 
+    def _get_riot_api_request_headers(self):
+        """
+        Construct and return the request headers required for Riot API calls.
+
+        Returns:
+            dict: A dictionary containing the request headers with the Riot API token.
+        """
+        return {"X-Riot-Token": self.riot_api_key}
+
     def GetMatchData(
         self,
         request: riot_ingest_pb2.GetMatchDataRequest,
@@ -66,7 +75,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
             riot_ingest_pb2.GetMatchDataResponse: gRPC response containing the retrieved match data.
         """
         url = MATCH_DATA_ENDPOINT.format(match_id=request.match_id)
-        headers = {"X-Riot-Token": self.riot_api_key}
+        headers = self._get_riot_api_request_headers()
         match_data = request_get(url, context, headers)
 
         if match_data is None:
@@ -197,30 +206,6 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
             for field_item in field_list
         ]
 
-    def _field_location(
-        self,
-        round_item: Dict[str, Any],
-        rounds_proto: match_pb2.RoundsData,
-        field_name: str,
-    ) -> None:
-        """Processes location field in a round and extends the corresponding field in protobuf message.
-
-        Args:
-            round_item (Dict[str, Any]): The dictionary containing round information.
-            rounds_proto (match_pb2.RoundsData): The protobuf message for round information.
-            field_name (str): The name of the field.
-
-        Returns:
-            None
-        """
-        if field_name in round_item and round_item[field_name]:
-            field_locations_proto_list = self._populate_location(round_item[field_name])
-
-            if field_name == "plantPlayerLocations":
-                rounds_proto.plant_player_locations.extend(field_locations_proto_list)
-            elif field_name == "defusePlayerLocations":
-                rounds_proto.defuse_player_locations.extend(field_locations_proto_list)
-
     def _player_stats(
         self, stats_list: List[Dict[str, Any]]
     ) -> List[match_pb2.PlayerRoundStatsData]:
@@ -232,7 +217,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         Returns:
             List[match_pb2.PlayerRoundStatsData]: List of protobuf messages for player stats.
         """
-        stats_proto_list = []
+        round_stats = []
 
         for stats_item in stats_list:
             stats_proto = match_pb2.PlayerRoundStatsData()
@@ -292,9 +277,9 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
                 kills_proto_list.append(kills_proto)
 
             stats_proto.kills.extend(kills_proto_list)
-            stats_proto_list.append(stats_proto)
+            round_stats.append(stats_proto)
 
-        return stats_proto_list
+        return round_stats
 
     def _populate_round_info(
         self, match_data: Dict[str, Any]
@@ -324,8 +309,24 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
 
             player_stats = round_item["playerStats"]
             rounds_proto.player_stats.extend(self._player_stats(player_stats))
-            self._field_location(round_item, rounds_proto, "plantPlayerLocations")
-            self._field_location(round_item, rounds_proto, "defusePlayerLocations")
+
+            if (
+                "plantPlayerLocations" in round_item
+                and round_item["plantPlayerLocations"]
+            ):
+                field_locations_proto_list = self._populate_location(
+                    round_item["plantPlayerLocations"]
+                )
+                rounds_proto.plant_player_locations.extend(field_locations_proto_list)
+
+            if (
+                "defusePlayerLocations" in round_item
+                and round_item["defusePlayerLocations"]
+            ):
+                field_locations_proto_list = self._populate_location(
+                    round_item["defusePlayerLocations"]
+                )
+                rounds_proto.defuse_player_locations.extend(field_locations_proto_list)
 
             plant_coordinates_proto = match_pb2.LocationData()
             plant_coordinates_proto.x = round_item["plantLocation"]["x"]
@@ -362,7 +363,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
             game_name=request.game_name, tag_line=request.tag_line
         )
 
-        headers = {"X-Riot-Token": self.riot_api_key}
+        headers = self._get_riot_api_request_headers()
         account_data = request_get(url, context, headers)
 
         if account_data is None:
@@ -392,7 +393,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
 
         """
         url = MATCH_LIST_DATA_ENDPOINT.format(puuid=request.puuid)
-        headers = {"X-Riot-Token": self.riot_api_key}
+        headers = self._get_riot_api_request_headers()
         match_data = request_get(url, context, headers)
 
         if match_data is None:
@@ -426,7 +427,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
             riot_ingest_pb2.GetContentDataResponse: The gRPC response object containing content data.
         """
         url = CONTENT_DATA_ENDPOINT
-        headers = {"X-Riot-Token": self.riot_api_key}
+        headers = self._get_riot_api_request_headers()
         context_data = request_get(url, context, headers)
 
         if context_data is None:
