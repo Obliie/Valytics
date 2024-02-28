@@ -350,7 +350,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         request: riot_ingest_pb2.GetAccountByRiotIDRequest,
         context: grpc.ServicerContext,
     ) -> riot_ingest_pb2.GetAccountByRiotIDResponse:
-        """Fetch account data from Riot Games API and return the retrieved data.
+        """Fetch account data from Riot Games API and return the retrieved data
 
         Args:
             request (riot_ingest_pb2.GetAccountByRiotIDRequest): The request containing game_name and tag_line.
