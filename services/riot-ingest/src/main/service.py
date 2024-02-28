@@ -26,14 +26,10 @@ RIOT_API_URL = os.environ.get("RIOT_API_URL")
 RIOT_API_KEY_FILE = "/run/secrets/riot-api-key"
 
 MATCH_DATA_ENDPOINT = f"{RIOT_API_URL}/val/match/v1/matches/{{match_id}}"
-ACCOUNT_DATA_ENDPOINT = (
-    f"{RIOT_API_URL}/account/v1/accounts/by-riot-id/{{game_name}}/{{tag_line}}"
-)
+ACCOUNT_DATA_ENDPOINT = f"{RIOT_API_URL}/account/v1/accounts/by-riot-id/{{game_name}}/{{tag_line}}"
 MATCH_LIST_DATA_ENDPOINT = f"{RIOT_API_URL}/val/match/v1/matchlists/by-puuid/{{puuid}}"
 CONTENT_DATA_ENDPOINT = f"{RIOT_API_URL}/val/content/v1/contents"
-LEADERBOARD_DATA_ENDPOINT = (
-    f"{RIOT_API_URL}/val/ranked/v1/leaderboards/by-act/{{act_id}}"
-)
+LEADERBOARD_DATA_ENDPOINT = f"{RIOT_API_URL}/val/ranked/v1/leaderboards/by-act/{{act_id}}"
 
 
 class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
@@ -95,9 +91,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
 
         return response_message
 
-    def _populate_player_info(
-        self, match_data: Dict[str, Any]
-    ) -> List[match_pb2.PlayerData]:
+    def _populate_player_info(self, match_data: Dict[str, Any]) -> List[match_pb2.PlayerData]:
         """Populates a list of protobuf messages for player information based on the provided match data.
 
         Args:
@@ -161,9 +155,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         match_info_proto.season_id = match_info_list["seasonId"]
         return match_info_proto
 
-    def _populate_teams_info(
-        self, match_data: Dict[str, Any]
-    ) -> List[match_pb2.TeamData]:
+    def _populate_teams_info(self, match_data: Dict[str, Any]) -> List[match_pb2.TeamData]:
         """Populates a list of protobuf messages for team information based on the provided match data.
 
         Args:
@@ -183,9 +175,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
             for team in match_data["teams"]
         ]
 
-    def _populate_location(
-        self, field_list: List[Any]
-    ) -> List[match_pb2.PlayerLocations]:
+    def _populate_location(self, field_list: List[Any]) -> List[match_pb2.PlayerLocations]:
         """Populates a list of protobuf messages for player locations based on the provided field list.
 
         Args:
@@ -198,16 +188,12 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
             match_pb2.PlayerLocations(
                 puuid=field_item["puuid"],
                 view_radians=field_item["viewRadians"],
-                location=match_pb2.LocationData(
-                    x=field_item["location"]["x"], y=field_item["location"]["y"]
-                ),
+                location=match_pb2.LocationData(x=field_item["location"]["x"], y=field_item["location"]["y"]),
             )
             for field_item in field_list
         ]
 
-    def _player_stats(
-        self, custom_rounds: List[Dict[str, Any]]
-    ) -> List[match_pb2.PlayerRoundStatsData]:
+    def _player_stats(self, custom_rounds: List[Dict[str, Any]]) -> List[match_pb2.PlayerRoundStatsData]:
         """Returns a list of corresponding protobuf messages.
 
         Args:
@@ -279,9 +265,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
 
         return round_stats
 
-    def _populate_round_info(
-        self, match_data: Dict[str, Any]
-    ) -> List[match_pb2.RoundsData]:
+    def _populate_round_info(self, match_data: Dict[str, Any]) -> List[match_pb2.RoundsData]:
         """Populates protobuf messages for round information based on the provided match data.
 
         Args:
@@ -308,22 +292,12 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
             player_stats = round_item["playerStats"]
             rounds_proto.player_stats.extend(self._player_stats(player_stats))
 
-            if (
-                "plantPlayerLocations" in round_item
-                and round_item["plantPlayerLocations"]
-            ):
-                field_locations_proto_list = self._populate_location(
-                    round_item["plantPlayerLocations"]
-                )
+            if "plantPlayerLocations" in round_item and round_item["plantPlayerLocations"]:
+                field_locations_proto_list = self._populate_location(round_item["plantPlayerLocations"])
                 rounds_proto.plant_player_locations.extend(field_locations_proto_list)
 
-            if (
-                "defusePlayerLocations" in round_item
-                and round_item["defusePlayerLocations"]
-            ):
-                field_locations_proto_list = self._populate_location(
-                    round_item["defusePlayerLocations"]
-                )
+            if "defusePlayerLocations" in round_item and round_item["defusePlayerLocations"]:
+                field_locations_proto_list = self._populate_location(round_item["defusePlayerLocations"])
                 rounds_proto.defuse_player_locations.extend(field_locations_proto_list)
 
             plant_coordinates_proto = match_pb2.LocationData()
@@ -357,9 +331,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         Returns:
             riot_ingest_pb2.GetAccountByRiotIDResponse: The response containing account information.
         """
-        url = ACCOUNT_DATA_ENDPOINT.format(
-            game_name=request.game_name, tag_line=request.tag_line
-        )
+        url = ACCOUNT_DATA_ENDPOINT.format(game_name=request.game_name, tag_line=request.tag_line)
 
         headers = self._get_riot_api_request_headers()
         account_data = request_get(url, context, headers)
@@ -478,9 +450,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         response_message.acts_info.extend(acts)
         return response_message
 
-    def _set_lang(
-        self, character: Dict[str, str], response: riot_ingest_pb2.Languages
-    ) -> riot_ingest_pb2.Languages:
+    def _set_lang(self, character: Dict[str, str], response: riot_ingest_pb2.Languages) -> riot_ingest_pb2.Languages:
         """Sets language values in the provided `response` proto based on the given `character` dictionary.
 
         Args:
@@ -510,9 +480,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         response.chinese_traditional = character["zh-TW"]
         return response
 
-    def _populate_proto_response(
-        self, context_data: Dict[str, Any], input_list: str
-    ) -> List[riot_ingest_pb2.GameData]:
+    def _populate_proto_response(self, context_data: Dict[str, Any], input_list: str) -> List[riot_ingest_pb2.GameData]:
         """Populates a protobuf response with data from the input list.
 
         Args:
@@ -569,9 +537,7 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
         Returns:
             riot_ingest_pb2.GetLeaderboardDataResponse: gRPC response containing the leaderboard data.
         """
-        url = LEADERBOARD_DATA_ENDPOINT.format(
-            act_id=(riot_ingest_pb2.ActId.Name(request.act_id))
-        )
+        url = LEADERBOARD_DATA_ENDPOINT.format(act_id=(riot_ingest_pb2.ActId.Name(request.act_id)))
         headers = {"X-Riot-Token": self.riot_api_key}
         leaderboard_data = request_get(url, context, headers)
 
@@ -601,16 +567,14 @@ class RiotIngestServicer(riot_ingest_pb2_grpc.RiotIngestService):
 def serve() -> None:
     """Starts the Riot Ingest service and waits for termination.
 
-    This function sets up a gRPC server, adds the RiotIngestServicer to it and starts the server,
+    This function sets up a gRPC server, adds the RiotIngestServicer to it, starts the server,
     and waits for termination.
 
     Returns:
         None
     """
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    riot_ingest_pb2_grpc.add_RiotIngestServiceServicer_to_server(
-        RiotIngestServicer(), server
-    )
+    riot_ingest_pb2_grpc.add_RiotIngestServiceServicer_to_server(RiotIngestServicer(), server)
     server.add_insecure_port(f"[::]:{os.environ['RIOT_INGEST_SERVICE_PORT']}")
     log_and_flush(logging.INFO, "Starting Riot Ingest service...")
     server.start()
