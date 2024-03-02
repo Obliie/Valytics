@@ -55,7 +55,9 @@ def request_get(
         response = requests.get(api_url, headers=headers)
         grpc_status = http_to_grpc_status_code(response.status_code)
         if grpc_status == grpc.StatusCode.OK:
-            return response.json()
+            content_type = response.headers.get("Content-Type", "").lower()
+            if "application/json" in content_type:
+                return response.json()
         context.set_code(grpc_status)
         context.set_details(f"HTTP error - {response.status_code}: {response.reason}")
     except requests.RequestException as e:
