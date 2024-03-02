@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package services;
-
-// Match service
-service Match {
-
-}
